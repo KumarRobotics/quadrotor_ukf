@@ -296,14 +296,14 @@ void QuadrotorUKF::PropagateAprioriCovariance(const ros::Time time,
   }
   // Handle jump between +pi and -pi !
   Eigen::MatrixXf::Index maxRow, maxCol;
-  /*double minYaw = Xa.row(6).minCoeff();// = min(Xa.row(6), 1);
+  double minYaw = Xa.row(6).minCoeff();// = min(Xa.row(6), 1);
   double maxYaw = Xa.row(6).maxCoeff();// = max(Xa.row(6), 1);
   if (fabs(minYaw - maxYaw) > PI)
   {
     for (int k = 0; k < 2*L+1; k++)
       if (Xa(6,k) < 0)
         Xa(6,k) += 2*PI;
-  }*/
+  }
   // Now we can get the mean...
   Eigen::Matrix<float, Eigen::Dynamic, 1> xa;
   xa.resize(Xa.rows(),1);
