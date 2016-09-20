@@ -202,7 +202,7 @@ Eigen::Matrix<double, Eigen::Dynamic, 1> QuadrotorUKF::ProcessModel(const Eigen:
   dR(1,2) = -w(0,0) * dt;
   dR(2,0) = -w(1,0) * dt;
   dR(2,1) =  w(0,0) * dt;
-  Eigen::Matrix<double, 3, 3> Rt = R * dR;
+  Eigen::Matrix<double, 3, 3> Rt = R * VIOUtil::expSO3(w * dt);//dR;
   // State
   Eigen::Matrix<double, Eigen::Dynamic, 1> xt = x;
   //xt.rows(0,2)  = x.rows(0,2) + x.rows(3,5)*dt + ddx*dt*dt/2;
