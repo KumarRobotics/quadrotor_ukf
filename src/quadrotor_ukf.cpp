@@ -156,7 +156,7 @@ void QuadrotorUKF::GenerateSigmaPoints()
   Paa.block(stateCnt,stateCnt, L - stateCnt, L - stateCnt) = Rv;
   // Matrix square root
   Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> sqrtPaa = Paa.llt().matrixL();
-  cout<<"sqrtPaa:"<<sqrtPaa<<endl
+  cout<<"sqrtPaa:"<<sqrtPaa<<endl;
   // Mean
   //Xaa.col(0) = xaa;
   //Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>  xaaMat = repmat(xaa,1,L);
