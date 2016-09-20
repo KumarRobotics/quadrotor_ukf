@@ -94,14 +94,16 @@ bool QuadrotorUKF::MeasurementUpdateSLAM(Eigen::Matrix<float, Eigen::Dynamic, 1>
   if (!initMeasure || !initGravity)
    return false;
   // A priori covariance
-  std::list<Eigen::Matrix<float, Eigen::Dynamic, 1> >::iterator    kx;
-  std::list<Eigen::Matrix<float, Eigen::Dynamic, 1> >::iterator    ku;
+  std::list<Eigen::Matrix<float, Eigen::Dynamic, 1> >::iterator kx;
+  std::list<Eigen::Matrix<float, Eigen::Dynamic, 1> >::iterator ku;
   std::list<ros::Time>::iterator kt;
   PropagateAprioriCovariance(time, kx, ku, kt);
   Eigen::Matrix<float, Eigen::Dynamic, 1> x = *kx;
   // Get Measurement
   Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> H = MeasurementModelSLAM();
   Eigen::Matrix<float, Eigen::Dynamic, 1> za = H * x;
+  cout<<"x:"<<x<<endl;
+  cout<<"H:"<<H<<endl;
   // Compute Kalman Gain
   Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> S = H * P * H.transpose() + RnSLAM;
   Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> K = P * H.transpose() * S.inverse();
