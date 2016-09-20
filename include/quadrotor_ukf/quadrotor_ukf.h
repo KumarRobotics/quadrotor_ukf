@@ -33,8 +33,8 @@ class QuadrotorUKF
     Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> Rv;
 
     // Instance sigma points
-    Eigen::Matrix<float, Eigen::Dynamic, 1> Xa;
-    Eigen::Matrix<float, Eigen::Dynamic, 1> Va;
+    Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> Xa;
+    Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> Va;
 
     // Initial process update indicator
     bool initMeasure;
@@ -84,7 +84,7 @@ class QuadrotorUKF
     void SetInitPose(Eigen::Matrix<float, Eigen::Dynamic, 1> p, ros::Time time);
 
     bool ProcessUpdate(Eigen::Matrix<float, Eigen::Dynamic, 1> u, ros::Time time);
-    bool MeasurementUpdateSLAM(Eigen::Matrix<float, Eigen::Dynamic, 1>  z, Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>  RnSLAM, ros::Time time);
+    bool MeasurementUpdateSLAM(const Eigen::Matrix<float, Eigen::Dynamic, 1>&  z, const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>&  RnSLAM, ros::Time time);
 };
 
 #endif

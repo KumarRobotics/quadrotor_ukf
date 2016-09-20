@@ -88,11 +88,12 @@ bool QuadrotorUKF::ProcessUpdate(Eigen::Matrix<float, Eigen::Dynamic, 1> u, ros:
   return true;
 }
 
-bool QuadrotorUKF::MeasurementUpdateSLAM(Eigen::Matrix<float, Eigen::Dynamic, 1> z, Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> RnSLAM, ros::Time time)
+bool QuadrotorUKF::MeasurementUpdateSLAM(const Eigen::Matrix<float, Eigen::Dynamic, 1>& z, const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>& RnSLAM, ros::Time time)
 {
   // Init
   if (!initMeasure || !initGravity)
    return false;
+
   // A priori covariance
   std::list<Eigen::Matrix<float, Eigen::Dynamic, 1> >::iterator kx;
   std::list<Eigen::Matrix<float, Eigen::Dynamic, 1> >::iterator ku;
@@ -107,6 +108,7 @@ bool QuadrotorUKF::MeasurementUpdateSLAM(Eigen::Matrix<float, Eigen::Dynamic, 1>
   Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> K = P * H.transpose() * S.inverse();
   // Innovation
   Eigen::Matrix<float, Eigen::Dynamic, 1> inno = z - za;
+
   // Handle angle jumps
   inno(3,0) = asin(sin(inno(3,0)));
   // Posteriori Mean
@@ -156,7 +158,6 @@ void QuadrotorUKF::GenerateSigmaPoints()
   Paa.block(stateCnt,stateCnt, L - stateCnt, L - stateCnt) = Rv;
   // Matrix square root
   Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> sqrtPaa = Paa.llt().matrixL();
-  cout<<"sqrtPaa:"<<sqrtPaa<<endl;
   // Mean
   //Xaa.col(0) = xaa;
   //Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>  xaaMat = repmat(xaa,1,L);
@@ -176,8 +177,8 @@ void QuadrotorUKF::GenerateSigmaPoints()
   // Push back to original state
   //Xa = Xaa.rows(0, stateCnt-1);
   //Va = Xaa.rows(stateCnt, L-1);
-  Xa = Xaa.block(0,0,stateCnt, 1);
-  Va = Xaa.block(stateCnt,0,L-stateCnt, 1);
+  Xa = Xaa.block(0,0,stateCnt, Xaa.cols());
+  Va = Xaa.block(stateCnt,0,L-stateCnt, Xaa.cols());
 }
 
 Eigen::Matrix<float, Eigen::Dynamic, 1> QuadrotorUKF::ProcessModel(const Eigen::Matrix<float, Eigen::Dynamic, 1>& x, const Eigen::Matrix<float, 6, 1>& u, const Eigen::Matrix<float, Eigen::Dynamic, 1>& v, double dt)
@@ -290,25 +291,28 @@ void QuadrotorUKF::PropagateAprioriCovariance(const ros::Time time,
   // Generate sigma points
   GenerateSigmaPoints();
   // Mean
-  for (int k = 0; k < 2*L+1; k++)
+  for (int k = 0; k < 2*L+1; k++){
     Xa.col(k) = ProcessModel(Xa.col(k), u, Va.col(k), dt);
+  }
   // Handle jump between +pi and -pi !
   Eigen::MatrixXf::Index maxRow, maxCol;
-  double minYaw = Xa.row(6).minCoeff();// = min(Xa.row(6), 1);
+  /*double minYaw = Xa.row(6).minCoeff();// = min(Xa.row(6), 1);
   double maxYaw = Xa.row(6).maxCoeff();// = max(Xa.row(6), 1);
   if (fabs(minYaw - maxYaw) > PI)
   {
     for (int k = 0; k < 2*L+1; k++)
       if (Xa(6,k) < 0)
         Xa(6,k) += 2*PI;
-  }
+  }*/
   // Now we can get the mean...
   Eigen::Matrix<float, Eigen::Dynamic, 1> xa;
   xa.resize(Xa.rows(),1);
-  for (int i = 0; i < 2 * L + 1; i++)
+  for (int i = 0; i < 2 * L + 1; i++){
    xa += wm(i) * Xa.col(i);// = sum( repmat(wm,stateCnt,1) % Xa, 1 );
+}
+
   // Covariance
-  P.setZero(Xa.cols(), Xa.cols());//.zeros();
+  P.setZero(Xa.rows(), Xa.rows());//.zeros();
   for (int k = 0; k < 2*L+1; k++)
   {
     Eigen::Matrix<float, Eigen::Dynamic, 1> d = Xa.col(k) - xa;
