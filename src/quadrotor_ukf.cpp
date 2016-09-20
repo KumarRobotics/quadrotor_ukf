@@ -181,7 +181,7 @@ void QuadrotorUKF::GenerateSigmaPoints()
   Va = Xaa.block(stateCnt,0,L-stateCnt, 1);
 }
 
-Eigen::Matrix<float, Eigen::Dynamic, 1> QuadrotorUKF::ProcessModel(const Eigen::Matrix<float, Eigen::Dynamic, 1>& x, const Eigen::Matrix<float, Eigen::Dynamic, 1>& u, const Eigen::Matrix<float, Eigen::Dynamic, 1>& v, double dt)
+Eigen::Matrix<float, Eigen::Dynamic, 1> QuadrotorUKF::ProcessModel(const Eigen::Matrix<float, Eigen::Dynamic, 1>& x, const Eigen::Matrix<float, 6, 1>& u, const Eigen::Matrix<float, Eigen::Dynamic, 1>& v, double dt)
 {
   Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> R = VIOUtil::ypr_to_R(x.block<3,1>(6,0));//x.rows(6,8)
   Eigen::Matrix<float, 3, 1> ag;
@@ -281,9 +281,9 @@ void QuadrotorUKF::PropagateAprioriCovariance(const ros::Time time,
   // Angular Velocity
   Eigen::Matrix<float, 3, 3> dR = pR.transpose() * VIOUtil::ypr_to_R(cx.block<3,1>(6,0));//cx.rows(6,8)
   Eigen::Matrix<float, 3, 1> w;
-  w(0) = dR(2,1) / dt;
-  w(1) = dR(0,2) / dt;
-  w(2) = dR(1,0) / dt;
+  w(0,0) = dR(2,1) / dt;
+  w(1,0) = dR(0,2) / dt;
+  w(2,0) = dR(1,0) / dt;
   // Assemble state and control
   Eigen::Matrix<float, 6, 1> u;
   u.block<3,1>(0,0) = a;

@@ -62,7 +62,7 @@ class QuadrotorUKF
     // Private functions
     void GenerateWeights();
     void GenerateSigmaPoints();
-    Eigen::Matrix<float, Eigen::Dynamic, 1> ProcessModel(const Eigen::Matrix<float, Eigen::Dynamic, 1>& x, const Eigen::Matrix<float, Eigen::Dynamic, 1>& u, const Eigen::Matrix<float, Eigen::Dynamic, 1>& v, double dt);
+    Eigen::Matrix<float, Eigen::Dynamic, 1> ProcessModel(const Eigen::Matrix<float, Eigen::Dynamic, 1>& x, const Eigen::Matrix<float, 6, 1>& u, const Eigen::Matrix<float, Eigen::Dynamic, 1>& v, double dt);
     Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> MeasurementModelSLAM();
     void PropagateAprioriCovariance(const ros::Time time, std::list<Eigen::Matrix<float, Eigen::Dynamic, 1> >::iterator& kx, std::list<Eigen::Matrix<float, Eigen::Dynamic, 1> >::iterator& ku, std::list<ros::Time>::iterator& kt);
     void PropagateAposterioriState(std::list<Eigen::Matrix<float, Eigen::Dynamic, 1> >::iterator kx, std::list<Eigen::Matrix<float, Eigen::Dynamic, 1> >::iterator ku, std::list<ros::Time>::iterator kt);
