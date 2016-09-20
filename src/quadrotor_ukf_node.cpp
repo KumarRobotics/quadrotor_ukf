@@ -122,7 +122,7 @@ void slam_callback(const nav_msgs::Odometry::ConstPtr& msg)
   //robot frame
   //mat H_R_R0 = zeros<mat>(4,4);
   Eigen::Matrix<float, 4, 4> H_R_R0;
-  H_R_R0.setZero();
+  H_R_R0.setIdentity();
   H_R_R0 = H_C_B*H_C_C0*H_C_B.inverse();
   //Set the rotation
   Eigen::Matrix<float, 4, 1> q_R_R0 = VIOUtil::MatToQuat(H_R_R0.block(0, 0, 3, 3));
