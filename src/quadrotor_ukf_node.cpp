@@ -61,7 +61,7 @@ void imu_callback(const sensor_msgs::Imu::ConstPtr& msg)
     odomUKF.twist.twist.angular.x = u(3,0);
     odomUKF.twist.twist.angular.y = u(4,0);
     odomUKF.twist.twist.angular.z = u(5,0);
-    igen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>  P = quadrotorUKF.GetStateCovariance();
+    Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>  P = quadrotorUKF.GetStateCovariance();
     for (int j = 0; j < 6; j++)
       for (int i = 0; i < 6; i++)
         odomUKF.pose.covariance[i+j*6] = P((i<3)?i:i+3 , (j<3)?j:j+3);
@@ -114,7 +114,7 @@ void slam_callback(const nav_msgs::Odometry::ConstPtr& msg)
   //arma::mat H_C_C0 = arma::eye<mat>(4,4);
   Eigen::Matrix<float, 4, 4> H_C_C0;
   H_C_C0.setIdentity();
-  H_C_C0.submat(0, 0, 2, 2) = VIOUtil::QuatToMat(q);
+  H_C_C0.block(0, 0, 3, 3) = VIOUtil::QuatToMat(q);
   H_C_C0(0,3) = z(0,0);
   H_C_C0(1,3) = z(1,0);
   H_C_C0(2,3) = z(2,0);
@@ -125,7 +125,7 @@ void slam_callback(const nav_msgs::Odometry::ConstPtr& msg)
   H_R_R0.setZero();
   H_R_R0 = H_C_B*H_C_C0*H_C_B.inverse();
   //Set the rotation
-  Eigen::Matrix<float, 4, 1> q_R_R0 = VIOUtil::MatToQuat(H_R_R0.submat(0, 0, 2, 2));
+  Eigen::Matrix<float, 4, 1> q_R_R0 = VIOUtil::MatToQuat(H_R_R0.block(0, 0, 3, 3));
 
   // Assemble measurement
   Eigen::Matrix<float, 6, 1> z_new;
