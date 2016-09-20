@@ -50,7 +50,7 @@ void imu_callback(const sensor_msgs::Imu::ConstPtr& msg)
     odomUKF.pose.pose.position.x = x(0,0);
     odomUKF.pose.pose.position.y = x(1,0);
     odomUKF.pose.pose.position.z = x(2,0);
-    Eigen::Matrix<float, 4, 1> q = VIOUtil::MatToQuat(ypr_to_R(x.block(6,0,3,1)));
+    Eigen::Matrix<float, 4, 1> q = VIOUtil::MatToQuat(VIOUtil::ypr_to_R(x.block(6,0,3,1)));
     odomUKF.pose.pose.orientation.w = q(0,0);
     odomUKF.pose.pose.orientation.x = q(1,0);
     odomUKF.pose.pose.orientation.y = q(2,0);
