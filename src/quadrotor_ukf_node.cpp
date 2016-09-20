@@ -149,7 +149,7 @@ void slam_callback(const nav_msgs::Odometry::ConstPtr& msg)
   // Measurement update
   if (quadrotorUKF.isInitialized())
   {
-    quadrotorUKF.MeasurementUpdateSLAM(z_new, RnSLAM_new, msg->header.stamp);
+    //quadrotorUKF.MeasurementUpdateSLAM(z_new, RnSLAM_new, msg->header.stamp);
   }
   else
   {
