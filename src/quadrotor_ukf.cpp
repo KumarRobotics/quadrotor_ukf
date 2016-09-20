@@ -177,8 +177,8 @@ void QuadrotorUKF::GenerateSigmaPoints()
   // Push back to original state
   //Xa = Xaa.rows(0, stateCnt-1);
   //Va = Xaa.rows(stateCnt, L-1);
-  Xa = Xaa.block(0,0,stateCnt, Xaa.cols());
-  Va = Xaa.block(stateCnt,0,L-stateCnt, Xaa.cols());
+  Xa = Xaa.block(0,0,stateCnt, 2*L+1);
+  Va = Xaa.block(stateCnt,0,L-stateCnt, 2*L+1);
 }
 
 Eigen::Matrix<float, Eigen::Dynamic, 1> QuadrotorUKF::ProcessModel(const Eigen::Matrix<float, Eigen::Dynamic, 1>& x, const Eigen::Matrix<float, 6, 1>& u, const Eigen::Matrix<float, Eigen::Dynamic, 1>& v, double dt)
@@ -192,7 +192,7 @@ Eigen::Matrix<float, Eigen::Dynamic, 1> QuadrotorUKF::ProcessModel(const Eigen::
   Eigen::Matrix<float, Eigen::Dynamic, 1> a = u.block<3,1>(0,0) + v.block<3,1>(0,0);//u.rows(0,2) + v.rows(0,2);
   Eigen::Matrix<float, Eigen::Dynamic, 1> ddx = R * (a - x.block<3,1>(9,0)) - ag;//R * (a - x.rows(9,11)) - ag;
 
-// Rotation
+ // Rotation
   Eigen::Matrix<float, 3, 1> w = u.block<3,1>(3,0) + v.block<3,1>(3,0);//u.rows(3,5) + v.rows(3,5);
   Eigen::Matrix<float, 3, 3> dR;//eye<mat>(3,3);
   dR.setIdentity();
@@ -308,7 +308,7 @@ void QuadrotorUKF::PropagateAprioriCovariance(const ros::Time time,
   Eigen::Matrix<float, Eigen::Dynamic, 1> xa;
   xa.resize(Xa.rows(),1);
   for (int i = 0; i < 2 * L + 1; i++){
-   xa += wm(i) * Xa.col(i);// = sum( repmat(wm,stateCnt,1) % Xa, 1 );
+   xa += wm(0,i) * Xa.col(i);// = sum( repmat(wm,stateCnt,1) % Xa, 1 );
 }
 
   // Covariance
@@ -316,7 +316,7 @@ void QuadrotorUKF::PropagateAprioriCovariance(const ros::Time time,
   for (int k = 0; k < 2*L+1; k++)
   {
     Eigen::Matrix<float, Eigen::Dynamic, 1> d = Xa.col(k) - xa;
-    P += wc(k,0) * d * d.transpose();
+    P += wc(0,k) * d * d.transpose();
   }
   return;
 }
