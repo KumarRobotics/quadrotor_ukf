@@ -12,7 +12,7 @@ static QuadrotorUKF quadrotorUKF;
 static std::string frame_id;
 
 //arma::mat H_C_B = arma::eye<mat>(4,4);//Never use reshape
-Eigen::Matrix<float, 4, 4> H_C_B;
+Eigen::Matrix<double, 4, 4> H_C_B;
 
 void imu_callback(const sensor_msgs::Imu::ConstPtr& msg)
 {
@@ -20,8 +20,8 @@ void imu_callback(const sensor_msgs::Imu::ConstPtr& msg)
   static int calLimit = 100;
   static int calCnt   = 0;
   //static colvec ag = zeros<colvec>(3);
-  static Eigen::Matrix<float, 3, 1> ag;
-  Eigen::Matrix<float, 6, 1> u;
+  static Eigen::Matrix<double, 3, 1> ag;
+  Eigen::Matrix<double, 6, 1> u;
   u(0,0) = msg->linear_acceleration.x;
   u(1,0) = -msg->linear_acceleration.y;
   u(2,0) = -msg->linear_acceleration.z;
@@ -46,11 +46,11 @@ void imu_callback(const sensor_msgs::Imu::ConstPtr& msg)
     // Publish odom
     odomUKF.header.stamp = quadrotorUKF.GetStateTime();
     odomUKF.header.frame_id = frame_id;
-    Eigen::Matrix<float, Eigen::Dynamic, 1> x = quadrotorUKF.GetState();
+    Eigen::Matrix<double, Eigen::Dynamic, 1> x = quadrotorUKF.GetState();
     odomUKF.pose.pose.position.x = x(0,0);
     odomUKF.pose.pose.position.y = x(1,0);
     odomUKF.pose.pose.position.z = x(2,0);
-    Eigen::Matrix<float, 4, 1> q = VIOUtil::MatToQuat(VIOUtil::ypr_to_R(x.block(6,0,3,1)));
+    Eigen::Matrix<double, 4, 1> q = VIOUtil::MatToQuat(VIOUtil::ypr_to_R(x.block(6,0,3,1)));
     odomUKF.pose.pose.orientation.w = q(0,0);
     odomUKF.pose.pose.orientation.x = q(1,0);
     odomUKF.pose.pose.orientation.y = q(2,0);
@@ -61,7 +61,7 @@ void imu_callback(const sensor_msgs::Imu::ConstPtr& msg)
     odomUKF.twist.twist.angular.x = u(3,0);
     odomUKF.twist.twist.angular.y = u(4,0);
     odomUKF.twist.twist.angular.z = u(5,0);
-    Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>  P = quadrotorUKF.GetStateCovariance();
+    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>  P = quadrotorUKF.GetStateCovariance();
     for (int j = 0; j < 6; j++)
       for (int i = 0; i < 6; i++)
         odomUKF.pose.covariance[i+j*6] = P((i<3)?i:i+3 , (j<3)?j:j+3);
@@ -83,14 +83,14 @@ void imu_callback(const sensor_msgs::Imu::ConstPtr& msg)
 void slam_callback(const nav_msgs::Odometry::ConstPtr& msg)
 {
   // Get orientation
-  Eigen::Matrix<float, 4, 1> q;
+  Eigen::Matrix<double, 4, 1> q;
   q(0,0) = msg->pose.pose.orientation.w;
   q(1,0) = msg->pose.pose.orientation.x;
   q(2,0) = msg->pose.pose.orientation.y;
   q(3,0) = msg->pose.pose.orientation.z;
-  Eigen::Matrix<float, 3, 1> ypr = VIOUtil::R_to_ypr(VIOUtil::QuatToMat(q));
+  Eigen::Matrix<double, 3, 1> ypr = VIOUtil::R_to_ypr(VIOUtil::QuatToMat(q));
   // Assemble measurement
-  Eigen::Matrix<float, 6, 1> z;
+  Eigen::Matrix<double, 6, 1> z;
   z(0,0) = msg->pose.pose.position.x;
   z(1,0) = msg->pose.pose.position.y;
   z(2,0) = msg->pose.pose.position.z;
@@ -98,7 +98,7 @@ void slam_callback(const nav_msgs::Odometry::ConstPtr& msg)
   z(4,0) = ypr(1,0);
   z(5,0) = ypr(2,0);
   // Assemble measurement covariance
-  Eigen::Matrix<float, 6, 6> RnSLAM;
+  Eigen::Matrix<double, 6, 6> RnSLAM;
   RnSLAM.setZero();// = zeros<mat>(6,6);
   //for (int j = 0; j < 3; j++)
     //for (int i = 0; i < 3; i++)
@@ -112,7 +112,7 @@ void slam_callback(const nav_msgs::Odometry::ConstPtr& msg)
 
   //rotate the measurement for control purpose
   //arma::mat H_C_C0 = arma::eye<mat>(4,4);
-  Eigen::Matrix<float, 4, 4> H_C_C0;
+  Eigen::Matrix<double, 4, 4> H_C_C0;
   H_C_C0.setIdentity();
   H_C_C0.block(0, 0, 3, 3) = VIOUtil::QuatToMat(q);
   H_C_C0(0,3) = z(0,0);
@@ -121,25 +121,25 @@ void slam_callback(const nav_msgs::Odometry::ConstPtr& msg)
 
   //robot frame
   //mat H_R_R0 = zeros<mat>(4,4);
-  Eigen::Matrix<float, 4, 4> H_R_R0;
+  Eigen::Matrix<double, 4, 4> H_R_R0;
   H_R_R0.setIdentity();
   H_R_R0 = H_C_B*H_C_C0*H_C_B.inverse();
   //Set the rotation
-  Eigen::Matrix<float, 4, 1> q_R_R0 = VIOUtil::MatToQuat(H_R_R0.block(0, 0, 3, 3));
+  Eigen::Matrix<double, 4, 1> q_R_R0 = VIOUtil::MatToQuat(H_R_R0.block(0, 0, 3, 3));
 
   // Assemble measurement
-  Eigen::Matrix<float, 6, 1> z_new;
+  Eigen::Matrix<double, 6, 1> z_new;
   z_new(0,0) = H_R_R0(0,3);
   z_new(1,0) = H_R_R0(1,3);
   z_new(2,0) = H_R_R0(2,3);
   //define the matrix to rotate in the original frame
-  Eigen::Matrix<float, 3, 1> ypr_new = VIOUtil::R_to_ypr(VIOUtil::QuatToMat(q_R_R0));//R_to_ypr(H_R_R0.submat(0, 0, 2, 2));
+  Eigen::Matrix<double, 3, 1> ypr_new = VIOUtil::R_to_ypr(VIOUtil::QuatToMat(q_R_R0));//R_to_ypr(H_R_R0.submat(0, 0, 2, 2));
   z_new(3,0) = ypr_new(0,0);
   z_new(4,0) = ypr_new(1,0);
   z_new(5,0) = ypr_new(2,0);
   
   //rotate the covariance
-  Eigen::Matrix<float, 6, 6>  RnSLAM_new;
+  Eigen::Matrix<double, 6, 6>  RnSLAM_new;
   RnSLAM_new.setZero();// = zeros<mat>(6,6);
   //RnSLAM_new.submat(0,0,2,2) = H_C_B.submat(0, 0, 2, 2)*RnSLAM.submat(0,0,2,2)*H_C_B.submat(0, 0, 2, 2).t();
   //RnSLAM_new.submat(3,3,5,5) = H_C_B.submat(0, 0, 2, 2)*RnSLAM.submat(3,3,5,5)*H_C_B.submat(0, 0, 2, 2).t();
@@ -202,7 +202,7 @@ int main(int argc, char** argv)
   n.param("noise_std/process/acc_bias/z", stdAccBias[2], 0.05);
 
   // Fixed process noise
-  Eigen::Matrix<float, 9, 9> Rv;
+  Eigen::Matrix<double, 9, 9> Rv;
   Rv.setIdentity();// = eye<mat>(9,9);
   Rv(0,0)   = stdAcc[0] * stdAcc[0];
   Rv(1,1)   = stdAcc[1] * stdAcc[1];

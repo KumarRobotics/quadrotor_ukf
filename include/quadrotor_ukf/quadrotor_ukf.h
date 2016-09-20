@@ -24,17 +24,17 @@ class QuadrotorUKF
   private:
 
     // State History and Covariance
-    std::list<Eigen::Matrix<float, Eigen::Dynamic, 1> >  xHist;
-    std::list<Eigen::Matrix<float, Eigen::Dynamic, 1> >  uHist;
+    std::list<Eigen::Matrix<double, Eigen::Dynamic, 1> >  xHist;
+    std::list<Eigen::Matrix<double, Eigen::Dynamic, 1> >  uHist;
     std::list<ros::Time> xTimeHist;
-    Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> P;
+    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> P;
 
     // Process Covariance Matrix
-    Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> Rv;
+    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> Rv;
 
     // Instance sigma points
-    Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> Xa;
-    Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> Va;
+    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> Xa;
+    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> Va;
 
     // Initial process update indicator
     bool initMeasure;
@@ -56,16 +56,16 @@ class QuadrotorUKF
     double lambda;
     double gamma;
     // UKF Weights
-    Eigen::Matrix<float, 1, Eigen::Dynamic>  wm;
-    Eigen::Matrix<float, 1, Eigen::Dynamic>  wc;
+    Eigen::Matrix<double, 1, Eigen::Dynamic>  wm;
+    Eigen::Matrix<double, 1, Eigen::Dynamic>  wc;
 
     // Private functions
     void GenerateWeights();
     void GenerateSigmaPoints();
-    Eigen::Matrix<float, Eigen::Dynamic, 1> ProcessModel(const Eigen::Matrix<float, Eigen::Dynamic, 1>& x, const Eigen::Matrix<float, 6, 1>& u, const Eigen::Matrix<float, Eigen::Dynamic, 1>& v, double dt);
-    Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> MeasurementModelSLAM();
-    void PropagateAprioriCovariance(const ros::Time time, std::list<Eigen::Matrix<float, Eigen::Dynamic, 1> >::iterator& kx, std::list<Eigen::Matrix<float, Eigen::Dynamic, 1> >::iterator& ku, std::list<ros::Time>::iterator& kt);
-    void PropagateAposterioriState(std::list<Eigen::Matrix<float, Eigen::Dynamic, 1> >::iterator kx, std::list<Eigen::Matrix<float, Eigen::Dynamic, 1> >::iterator ku, std::list<ros::Time>::iterator kt);
+    Eigen::Matrix<double, Eigen::Dynamic, 1> ProcessModel(const Eigen::Matrix<double, Eigen::Dynamic, 1>& x, const Eigen::Matrix<double, 6, 1>& u, const Eigen::Matrix<double, Eigen::Dynamic, 1>& v, double dt);
+    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> MeasurementModelSLAM();
+    void PropagateAprioriCovariance(const ros::Time time, std::list<Eigen::Matrix<double, Eigen::Dynamic, 1> >::iterator& kx, std::list<Eigen::Matrix<double, Eigen::Dynamic, 1> >::iterator& ku, std::list<ros::Time>::iterator& kt);
+    void PropagateAposterioriState(std::list<Eigen::Matrix<double, Eigen::Dynamic, 1> >::iterator kx, std::list<Eigen::Matrix<double, Eigen::Dynamic, 1> >::iterator ku, std::list<ros::Time>::iterator kt);
 
   public:
 
@@ -74,17 +74,17 @@ class QuadrotorUKF
 
     //bool QuadrotorUKF::isInitialized() { return (initMeasure && initGravity); }();
     bool isInitialized();
-    Eigen::Matrix<float, Eigen::Dynamic, 1> GetState();
+    Eigen::Matrix<double, Eigen::Dynamic, 1> GetState();
     ros::Time GetStateTime();
-    Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> GetStateCovariance();
+    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> GetStateCovariance();
 
     void SetGravity(double _g);
-    void SetImuCovariance(const Eigen::Matrix<float, Eigen::Dynamic,  Eigen::Dynamic>& _Rv);
+    void SetImuCovariance(const Eigen::Matrix<double, Eigen::Dynamic,  Eigen::Dynamic>& _Rv);
     void SetUKFParameters(double _alpha, double _beta, double _kappa);
-    void SetInitPose(Eigen::Matrix<float, Eigen::Dynamic, 1> p, ros::Time time);
+    void SetInitPose(Eigen::Matrix<double, Eigen::Dynamic, 1> p, ros::Time time);
 
-    bool ProcessUpdate(Eigen::Matrix<float, Eigen::Dynamic, 1> u, ros::Time time);
-    bool MeasurementUpdateSLAM(const Eigen::Matrix<float, Eigen::Dynamic, 1>&  z, const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>&  RnSLAM, ros::Time time);
+    bool ProcessUpdate(Eigen::Matrix<double, Eigen::Dynamic, 1> u, ros::Time time);
+    bool MeasurementUpdateSLAM(const Eigen::Matrix<double, Eigen::Dynamic, 1>&  z, const Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>&  RnSLAM, ros::Time time);
 };
 
 #endif
