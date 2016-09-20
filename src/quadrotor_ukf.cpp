@@ -102,8 +102,6 @@ bool QuadrotorUKF::MeasurementUpdateSLAM(Eigen::Matrix<float, Eigen::Dynamic, 1>
   // Get Measurement
   Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> H = MeasurementModelSLAM();
   Eigen::Matrix<float, Eigen::Dynamic, 1> za = H * x;
-  cout<<"x:"<<x<<endl;
-  cout<<"H:"<<H<<endl;
   // Compute Kalman Gain
   Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> S = H * P * H.transpose() + RnSLAM;
   Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> K = P * H.transpose() * S.inverse();
@@ -158,6 +156,7 @@ void QuadrotorUKF::GenerateSigmaPoints()
   Paa.block(stateCnt,stateCnt, L - stateCnt, L - stateCnt) = Rv;
   // Matrix square root
   Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> sqrtPaa = Paa.llt().matrixL();
+  cout<<"sqrtPaa:"<<sqrtPaa<<endl
   // Mean
   //Xaa.col(0) = xaa;
   //Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>  xaaMat = repmat(xaa,1,L);
