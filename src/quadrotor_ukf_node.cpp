@@ -202,7 +202,8 @@ int main(int argc, char** argv)
   n.param("noise_std/process/acc_bias/z", stdAccBias[2], 0.05);
 
   // Fixed process noise
-  mat Rv = eye<mat>(9,9);
+  Eigen::Matrix<float, 9, 9> Rv;
+  Rv.setIdentity();// = eye<mat>(9,9);
   Rv(0,0)   = stdAcc[0] * stdAcc[0];
   Rv(1,1)   = stdAcc[1] * stdAcc[1];
   Rv(2,2)   = stdAcc[2] * stdAcc[2];
