@@ -37,7 +37,7 @@ void imu_callback(const sensor_msgs::Imu::ConstPtr& msg)
   {
     calCnt++;
     ag /= calLimit;
-    double g = norm(ag,2);
+    double g = ag.norm();norm(ag,2);
     quadrotorUKF.SetGravity(g);
   }
   else if (quadrotorUKF.ProcessUpdate(u, msg->header.stamp))  // Process Update
