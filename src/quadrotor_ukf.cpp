@@ -282,9 +282,12 @@ void QuadrotorUKF::PropagateAprioriCovariance(const ros::Time time,
   // Angular Velocity
   Eigen::Matrix<double, 3, 3> dR = pR.transpose() * VIOUtil::ypr_to_R(cx.block<3,1>(6,0));//cx.rows(6,8)
   Eigen::Matrix<double, 3, 1> w = VIOUtil::LogSO3(dR)/dt;
-  //w(0,0) = dR(2,1) / dt;
-  //w(1,0) = dR(0,2) / dt;
-  //w(2,0) = dR(1,0) / dt;
+  Eigen::Matrix<double, 3, 1> w2; 
+  w2(0,0) = dR(2,1) / dt;
+  w2(1,0) = dR(0,2) / dt;
+  w2(2,0) = dR(1,0) / dt;
+  cout<<"wnolog:"<<w2<<endl;
+  cout<<"w:"<<w<<endl;
   // Assemble state and control
   Eigen::Matrix<double, 6, 1> u;
   u.block<3,1>(0,0) = a;
