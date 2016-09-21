@@ -194,15 +194,16 @@ Eigen::Matrix<double, Eigen::Dynamic, 1> QuadrotorUKF::ProcessModel(const Eigen:
 
  // Rotation
   Eigen::Matrix<double, 3, 1> w = u.block<3,1>(3,0) + v.block<3,1>(3,0);//u.rows(3,5) + v.rows(3,5);
-  Eigen::Matrix<double, 3, 3> dR;//eye<mat>(3,3);
+  /*Eigen::Matrix<double, 3, 3> dR;//eye<mat>(3,3);
   dR.setIdentity();
   dR(0,1) = -w(2,0) * dt;
   dR(0,2) =  w(1,0) * dt;
   dR(1,0) =  w(2,0) * dt;
   dR(1,2) = -w(0,0) * dt;
   dR(2,0) = -w(1,0) * dt;
-  dR(2,1) =  w(0,0) * dt;
-  Eigen::Matrix<double, 3, 3> Rt = R * VIOUtil::expSO3(w * dt);//dR;
+  dR(2,1) =  w(0,0) * dt;*/
+  Eigen::Matrix<double, 3, 3> dR = VIOUtil::expSO3(w * dt);
+  Eigen::Matrix<double, 3, 3> Rt = R * dR;
   // State
   Eigen::Matrix<double, Eigen::Dynamic, 1> xt = x;
   //xt.rows(0,2)  = x.rows(0,2) + x.rows(3,5)*dt + ddx*dt*dt/2;
@@ -280,10 +281,10 @@ void QuadrotorUKF::PropagateAprioriCovariance(const ros::Time time,
   Eigen::Matrix<double, 3, 1> a = pR.transpose() * (dv / dt + ag) + px.block<3,1>(9,0);//.rows(9,11);
   // Angular Velocity
   Eigen::Matrix<double, 3, 3> dR = pR.transpose() * VIOUtil::ypr_to_R(cx.block<3,1>(6,0));//cx.rows(6,8)
-  Eigen::Matrix<double, 3, 1> w;
-  w(0,0) = dR(2,1) / dt;
-  w(1,0) = dR(0,2) / dt;
-  w(2,0) = dR(1,0) / dt;
+  Eigen::Matrix<double, 3, 1> w = VIOUtil::logSo3(dR)/dt;
+  //w(0,0) = dR(2,1) / dt;
+  //w(1,0) = dR(0,2) / dt;
+  //w(2,0) = dR(1,0) / dt;
   // Assemble state and control
   Eigen::Matrix<double, 6, 1> u;
   u.block<3,1>(0,0) = a;
