@@ -55,6 +55,8 @@ class QuadrotorUKF
     double kappa;
     double lambda;
     double gamma;
+
+
     // UKF Weights
     Eigen::Matrix<double, 1, Eigen::Dynamic>  wm;
     Eigen::Matrix<double, 1, Eigen::Dynamic>  wc;
@@ -72,6 +74,9 @@ class QuadrotorUKF
     QuadrotorUKF();
     ~QuadrotorUKF();
 
+    //manifold option
+    bool manifold;
+    
     //bool QuadrotorUKF::isInitialized() { return (initMeasure && initGravity); }();
     bool isInitialized();
     Eigen::Matrix<double, Eigen::Dynamic, 1> GetState();

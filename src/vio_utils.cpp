@@ -151,6 +151,27 @@ while(sum_res.norm() > 0.001);
  return mu;
 }
 
+Eigen::Matrix<double, 3, 3> VIOUtil::MeanofSigmaPointsManifoldSO3(const std::vector<Eigen::Matrix<double, 3, 3> >& R, const Eigen::Matrix<double, Eigen::Dynamic, 1>& w){
+  Eigen::Matrix<double, 3, 3> mu = R.at(0);
+  //sum of the errors
+  Eigen::Matrix<double, 3, 1> sum_res;
+do
+{
+  sum_res.setZero();
+  for (int i = 0; i < R.size(); i++)
+  {
+    sum_res+=w(i,0) * VIOUtil::LogSO3(mu.transpose() * R.at(i));
+
+  }
+  //now compute the final mean
+  mu = mu*VIOUtil::expSO3(sum_res);
+
+}
+while(sum_res.norm() > 0.001);
+
+
+ return mu;
+}
 
 
 //Logarithm formula from an homogeneous to a vector
