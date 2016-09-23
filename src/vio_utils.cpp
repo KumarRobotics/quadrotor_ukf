@@ -167,7 +167,7 @@ do
   mu = mu*VIOUtil::expSO3(sum_res);
 
 }
-while(sum_res.norm() > 0.001);
+while(sum_res.norm() > 0.1);
 
 
  return mu;
