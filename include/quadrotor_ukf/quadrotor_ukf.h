@@ -28,6 +28,7 @@ class QuadrotorUKF
     std::list<Eigen::Matrix<double, Eigen::Dynamic, 1> >  uHist;
     std::list<ros::Time> xTimeHist;
     Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> P;
+    Eigen::Matrix<double, 3, 3> meanR;
 
     // Process Covariance Matrix
     Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> Rv;
@@ -55,6 +56,9 @@ class QuadrotorUKF
     double kappa;
     double lambda;
     double gamma;
+    std::vector<Eigen::Matrix<double, 3, 3> > Xa_manifold_in;
+    Eigen::Matrix<double, 3, 3>  currR_mean;
+
 
 
     // UKF Weights
@@ -65,11 +69,15 @@ class QuadrotorUKF
     void GenerateWeights();
     void GenerateSigmaPoints();
     Eigen::Matrix<double, Eigen::Dynamic, 1> ProcessModel(const Eigen::Matrix<double, Eigen::Dynamic, 1>& x, const Eigen::Matrix<double, 6, 1>& u, const Eigen::Matrix<double, Eigen::Dynamic, 1>& v, double dt);
+    Eigen::Matrix<double, Eigen::Dynamic, 1> ProcessModelManifold(const Eigen::Matrix<double, Eigen::Dynamic, 1>& x, Eigen::Matrix<double, 3, 3>& x_manifold, const Eigen::Matrix<double, 6, 1>& u, const Eigen::Matrix<double, Eigen::Dynamic, 1>& v, double dt);
     Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> MeasurementModelSLAM();
-    void PropagateAprioriCovariance(const ros::Time time, std::list<Eigen::Matrix<double, Eigen::Dynamic, 1> >::iterator& kx, std::list<Eigen::Matrix<double, Eigen::Dynamic, 1> >::iterator& ku, std::list<ros::Time>::iterator& kt);
-    void PropagateAposterioriState(std::list<Eigen::Matrix<double, Eigen::Dynamic, 1> >::iterator kx, std::list<Eigen::Matrix<double, Eigen::Dynamic, 1> >::iterator ku, std::list<ros::Time>::iterator kt);
+    void PropagateAprioriCovariance(const ros::Time time,
+                                              std::list<Eigen::Matrix<double, Eigen::Dynamic, 1> >::iterator& kx, std::list<Eigen::Matrix<double, Eigen::Dynamic, 1> >::iterator& ku, std::list<ros::Time>::iterator& kt, std::list<Eigen::Matrix<double, 3, 3> >::iterator& kxManHist);
+    //void PropagateAposterioriState(std::list<Eigen::Matrix<double, Eigen::Dynamic, 1> >::iterator kx, std::list<Eigen::Matrix<double, Eigen::Dynamic, 1> >::iterator ku, std::list<ros::Time>::iterator kt);
+    void PropagateAposterioriState(std::list<Eigen::Matrix<double, Eigen::Dynamic, 1> >::iterator kx, std::list<Eigen::Matrix<double, 3, 3> >::iterator kxManHist, std::list<Eigen::Matrix<double, Eigen::Dynamic, 1> >::iterator ku, std::list<ros::Time>::iterator kt);
 
   public:
+    std::list<Eigen::Matrix<double, 3, 3> > xManHist;
 
     QuadrotorUKF();
     ~QuadrotorUKF();

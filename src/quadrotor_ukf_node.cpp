@@ -50,7 +50,13 @@ void imu_callback(const sensor_msgs::Imu::ConstPtr& msg)
     odomUKF.pose.pose.position.x = x(0,0);
     odomUKF.pose.pose.position.y = x(1,0);
     odomUKF.pose.pose.position.z = x(2,0);
-    Eigen::Matrix<double, 4, 1> q = VIOUtil::MatToQuat(VIOUtil::ypr_to_R(x.block(6,0,3,1)));
+    Eigen::Matrix<double, 4, 1> q;
+    if(quadrotorUKF.manifold){
+    q = VIOUtil::MatToQuat(quadrotorUKF.xManHist.front());//VIOUtil::MatToQuat(VIOUtil::expSO3(x.block(6,0,3,1)));
+    }
+    else{
+    q = VIOUtil::MatToQuat(VIOUtil::ypr_to_R(x.block(6,0,3,1)));
+    }
     odomUKF.pose.pose.orientation.w = q(0,0);
     odomUKF.pose.pose.orientation.x = q(1,0);
     odomUKF.pose.pose.orientation.y = q(2,0);
@@ -133,7 +139,6 @@ void slam_callback(const nav_msgs::Odometry::ConstPtr& msg)
   z_new(1,0) = H_R_R0(1,3);
   z_new(2,0) = H_R_R0(2,3);
   //define the matrix to rotate in the original frame
-  quadrotorUKF.manifold = true;
   if(quadrotorUKF.manifold){
   Eigen::Matrix<double, 3, 1> ypr_new = VIOUtil::LogSO3(VIOUtil::QuatToMat(q_R_R0));//R_to_ypr(H_R_R0.submat(0, 0, 2, 2));
   z_new(3,0) = ypr_new(0,0);
@@ -225,6 +230,7 @@ int main(int argc, char** argv)
   // Initialize UKF
   quadrotorUKF.SetUKFParameters(alpha, beta, kappa);
   quadrotorUKF.SetImuCovariance(Rv);
+  quadrotorUKF.manifold = true;
 
   ros::Subscriber subImu  = n.subscribe("imu" ,      10, imu_callback, ros::TransportHints().tcpNoDelay());
   ros::Subscriber subSLAM = n.subscribe("odom_slam", 10, slam_callback, ros::TransportHints().tcpNoDelay());

@@ -161,15 +161,11 @@ do
   for (int i = 0; i < R.size(); i++)
   {
     sum_res+=w(i,0) * VIOUtil::LogSO3(mu.transpose() * R.at(i));
-
   }
   //now compute the final mean
   mu = mu*VIOUtil::expSO3(sum_res);
 
-}
-while(sum_res.norm() > 0.1);
-
-
+}while(sum_res.norm() > 0.01);
  return mu;
 }
 
