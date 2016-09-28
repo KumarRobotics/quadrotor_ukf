@@ -125,9 +125,9 @@ Eigen::Matrix<double, 6, 6> M;
   // Posteriori Mean
   Eigen::Matrix<double, Eigen::Dynamic, 1> k_inno = K * inno;
 
-  x.block<6,1>(0,0) = x.block<6,1>(0,0) + k_inno.block<6,1>(0,0);
+  x.block<6,1>(0,0) += k_inno.block<6,1>(0,0);
   x.block<3,1>(6,0) = VIOUtil::LogSO3(x_manifold * VIOUtil::expSO3(k_inno.block<3,1>(6,0)));
-  x.block<3,1>(9,0) = x.block<3,1>(9,0) + k_inno.block<3,1>(9,0);
+  x.block<3,1>(9,0) += k_inno.block<3,1>(9,0);
   x_manifold = x_manifold * VIOUtil::expSO3(k_inno.block<3,1>(6,0));
   M = VIOUtil::parallel_transport_trans(k_inno.block(0, 0, 6, 1));
 
@@ -223,13 +223,13 @@ if(manifold){
 
   for (int i = 1; i < L+1; i++)
   {
-   Xaa.block<3,1>(6,i) =   VIOUtil::LogSO3(xman * VIOUtil::expSO3(gamma * sqrtPaa.block(6,i - 1,3,1)));
-   Xa_manifold_in.push_back(xman * VIOUtil::expSO3(gamma * sqrtPaa.block(6,i - 1,3,1)));
+   Xaa.block<3,1>(6,i) =   VIOUtil::LogSO3(xman * VIOUtil::expSO3(1 * sqrtPaa.block(6,i - 1,3,1)));
+   Xa_manifold_in.push_back(xman * VIOUtil::expSO3(1 * sqrtPaa.block(6,i - 1,3,1)));
   }
   for (int i = L+1; i < 2*L+1; i++)
   {
-   Xaa.block<3,1>(6,i) =   VIOUtil::LogSO3(xman * VIOUtil::expSO3(-gamma * sqrtPaa.block<3,1>(6,i - L - 1)));
-   Xa_manifold_in.push_back(xman * VIOUtil::expSO3(-gamma * sqrtPaa.block<3,1>(6,i - L - 1)));
+   Xaa.block<3,1>(6,i) =   VIOUtil::LogSO3(xman * VIOUtil::expSO3(-1 * sqrtPaa.block<3,1>(6,i - L - 1)));
+   Xa_manifold_in.push_back(xman * VIOUtil::expSO3(-1 * sqrtPaa.block<3,1>(6,i - L - 1)));
   }
 
 }
