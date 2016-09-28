@@ -98,7 +98,7 @@ bool QuadrotorUKF::MeasurementUpdateSLAM(const Eigen::Matrix<double, Eigen::Dyna
   // Init
   if (!initMeasure || !initGravity)
    return false;
-
+Eigen::Matrix<double, 6, 6> M;
   // A priori covariance
   std::list<Eigen::Matrix<double, Eigen::Dynamic, 1> >::iterator kx;
   std::list<Eigen::Matrix<double, Eigen::Dynamic, 1> >::iterator ku;
@@ -129,7 +129,7 @@ bool QuadrotorUKF::MeasurementUpdateSLAM(const Eigen::Matrix<double, Eigen::Dyna
   x.block<3,1>(6,0) = VIOUtil::LogSO3(x_manifold * VIOUtil::expSO3(k_inno.block<3,1>(6,0)));
   x.block<3,1>(9,0) = x.block<3,1>(9,0) + k_inno.block<3,1>(9,0);
   x_manifold = x_manifold * VIOUtil::expSO3(k_inno.block<3,1>(6,0));
-
+  M = VIOUtil::parallel_transport_trans(k_inno.block(0, 0, 6, 1));
 
 }
 else{
@@ -142,6 +142,14 @@ else{
   *kxManHist = x_manifold;
   // Posteriori Covariance
   P = P - K * H * P;
+  //Parallel transport
+  if(manifold){
+  P.block<3,3>(6,6) = M.block<3,3>(3,3) * P.block<3,3>(6,6) * M.block<3,3>(3,3).transpose();
+  P.block(6, 0, 3, 6) = M.block<3,3>(3,3) * P.block(6, 0, 3, 6) ;
+  P.block(0, 6, 6, 3) = P.block(0, 6, 6, 3) * M.block<3,3>(3,3).transpose();
+  P.block(0, 9, 3, P.cols() - 3) = M.block<3,3>(3,3) * P.block(0, 9, 3, P.cols() - 3);
+  P.block(9, 0, P.rows() - 3, 3) = P.block(9, 0, P.rows() - 3, 3) * M.block<3,3>(3,3).transpose();
+}
   // Propagate Aposteriori State
 
   PropagateAposterioriState(kx, kxManHist, ku, kt);
@@ -211,13 +219,13 @@ if(manifold){
 
   for (int i = 1; i < L+1; i++)
   {
-   Xaa.block<3,1>(6,i) =   VIOUtil::LogSO3(Xa_manifold_in.at(0) * VIOUtil::expSO3(gamma * sqrtPaa.block(6,i - 1,3,1)));
-   Xa_manifold_in.push_back(Xa_manifold_in.at(0) * VIOUtil::expSO3(gamma * sqrtPaa.block(6,i - 1,3,1)));
+   Xaa.block<3,1>(6,i) =   VIOUtil::LogSO3(xman * VIOUtil::expSO3(gamma * sqrtPaa.block(6,i - 1,3,1)));
+   Xa_manifold_in.push_back(xman * VIOUtil::expSO3(gamma * sqrtPaa.block(6,i - 1,3,1)));
   }
   for (int i = L+1; i < 2*L+1; i++)
   {
-   Xaa.block<3,1>(6,i) =   VIOUtil::LogSO3(Xa_manifold_in.at(0) * VIOUtil::expSO3(gamma * sqrtPaa.block(6,i - L - 1,3,1)));
-   Xa_manifold_in.push_back(Xa_manifold_in.at(0) * VIOUtil::expSO3(-gamma * sqrtPaa.block(6,i - L - 1,3,1)));
+   Xaa.block<3,1>(6,i) =   VIOUtil::LogSO3(xman * VIOUtil::expSO3(gamma * sqrtPaa.block(6,i - L - 1,3,1)));
+   Xa_manifold_in.push_back(xman * VIOUtil::expSO3(-gamma * sqrtPaa.block(6,i - L - 1,3,1)));
   }
 
 }

@@ -165,7 +165,7 @@ do
   //now compute the final mean
   mu = mu*VIOUtil::expSO3(sum_res);
 
-}while(sum_res.norm() > 0.01);
+}while(sum_res.norm() > 0.0001);
  return mu;
 }
 
