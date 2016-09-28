@@ -83,8 +83,8 @@ bool QuadrotorUKF::ProcessUpdate(Eigen::Matrix<double, Eigen::Dynamic, 1> u, ros
   double dt = (time-xTimeHist.front()).toSec();
   //Eigen::Matrix<double, Eigen::Dynamic, 1> x = ProcessModel(xHist.front(), u, Eigen::MatrixXd::Zero(procNoiseCnt,1), dt);//ProcessModel(xHist.front(), u, zeros<colvec>(procNoiseCnt), dt);
   Eigen::Matrix<double, 3, 3> xManHisttmp = xManHist.front();
-  Eigen::Matrix<double, Eigen::Dynamic, 1> x = ProcessModelManifold(xHist.front(), xManHisttmp, u, Eigen::MatrixXd::Zero(procNoiseCnt,1), dt);
-  //Eigen::Matrix<double, Eigen::Dynamic, 1> x = ProcessModel(xHist.front(), u, Eigen::MatrixXd::Zero(procNoiseCnt,1), dt);
+  //Eigen::Matrix<double, Eigen::Dynamic, 1> x = ProcessModelManifold(xHist.front(), xManHisttmp, u, Eigen::MatrixXd::Zero(procNoiseCnt,1), dt);
+  Eigen::Matrix<double, Eigen::Dynamic, 1> x = ProcessModel(xHist.front(), u, Eigen::MatrixXd::Zero(procNoiseCnt,1), dt);
   xHist.push_front(x);
   uHist.push_front(u);
   xManHist.push_front(xManHisttmp);
@@ -491,10 +491,10 @@ void QuadrotorUKF::PropagateAposterioriState(std::list<Eigen::Matrix<double, Eig
     _kt--;
      std::list<Eigen::Matrix<double, 3, 3> >::iterator _kxManHist  = kxManHist ;
     _kxManHist--;
-    //*_kx = ProcessModel(*kx, *_ku, Eigen::MatrixXd::Zero(procNoiseCnt,1), (*_kt - *kt).toSec());
+    *_kx = ProcessModel(*kx, *_ku, Eigen::MatrixXd::Zero(procNoiseCnt,1), (*_kt - *kt).toSec());
 
     Eigen::Matrix<double, 3, 3>  xManHisttmp = *kxManHist;
-    *_kx = ProcessModelManifold(*kx, xManHisttmp, *_ku, Eigen::MatrixXd::Zero(procNoiseCnt,1), (*_kt - *kt).toSec());
+    //*_kx = ProcessModelManifold(*kx, xManHisttmp, *_ku, Eigen::MatrixXd::Zero(procNoiseCnt,1), (*_kt - *kt).toSec());
     *_kxManHist = xManHisttmp;
   }
 }
