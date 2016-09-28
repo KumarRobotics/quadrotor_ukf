@@ -107,7 +107,7 @@ Eigen::Matrix<double, 6, 6> M;
   PropagateAprioriCovariance(time, kx, ku, kt, kxManHist);
 
   Eigen::Matrix<double, Eigen::Dynamic, 1> x = *kx;
-  Eigen::Matrix<double, 3, 3> x_manifold = *kxManHist;
+  Eigen::Matrix<double, 3, 3> x_manifold = meanR;//*kxManHist;
 
 
   // Get Measurement
@@ -144,11 +144,11 @@ else{
   P = P - K * H * P;
   //Parallel transport
   if(manifold){
-  P.block<3,3>(6,6) = M.block<3,3>(3,3) * P.block<3,3>(6,6) * M.block<3,3>(3,3).transpose();
+  /*P.block<3,3>(6,6) = M.block<3,3>(3,3) * P.block<3,3>(6,6) * M.block<3,3>(3,3).transpose();
   P.block(6, 0, 3, 6) = M.block<3,3>(3,3) * P.block(6, 0, 3, 6) ;
   P.block(0, 6, 6, 3) = P.block(0, 6, 6, 3) * M.block<3,3>(3,3).transpose();
   P.block(0, 9, 3, P.cols() - 3) = M.block<3,3>(3,3) * P.block(0, 9, 3, P.cols() - 3);
-  P.block(9, 0, P.rows() - 3, 3) = P.block(9, 0, P.rows() - 3, 3) * M.block<3,3>(3,3).transpose();
+  P.block(9, 0, P.rows() - 3, 3) = P.block(9, 0, P.rows() - 3, 3) * M.block<3,3>(3,3).transpose();*/
 }
   // Propagate Aposteriori State
 
@@ -213,8 +213,9 @@ void QuadrotorUKF::GenerateSigmaPoints()
     xaaMat.col(i) = xaa;
 
 Xaa.col(0) = xaa;
-Xa_manifold_in.clear();
+
 if(manifold){
+  Xa_manifold_in.clear();
   Xa_manifold_in.push_back(xman);
   Xaa.block(0,1,L,L) =   xaaMat.block(0,0,L,L) + gamma * sqrtPaa;
   Xaa.block(0,L+1,L,L) = xaaMat.block(0,0,L,L) - gamma * sqrtPaa;
