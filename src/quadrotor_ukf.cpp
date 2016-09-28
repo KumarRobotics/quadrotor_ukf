@@ -184,8 +184,8 @@ void QuadrotorUKF::GenerateSigmaPoints()
 
   Eigen::Matrix<double, Eigen::Dynamic, 1> xaa;
   xaa.setZero(L,1);
-
   xaa.block(0,0,stateCnt,1) = x;
+
   //xaa.rows(0,stateCnt-1) = x;
   Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> Xaa; 
   Xaa.setZero(L, 2*L+1);
@@ -196,6 +196,9 @@ void QuadrotorUKF::GenerateSigmaPoints()
   Paa.block(0,0,stateCnt,stateCnt) = P;
   Paa.block(stateCnt,stateCnt, L - stateCnt, L - stateCnt) = Rv;
   // Matrix square root
+  Eigen::JacobiSVD<Eigen::MatrixXd> svd(Paa);
+ double cond = svd.singularValues()(0) / svd.singularValues()(svd.singularValues().size()-1);
+ cout<<"cond:"<<cond<<endl;
   Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> sqrtPaa = Paa.llt().matrixL();
   // Mean
   //Xaa.col(0) = xaa;
@@ -224,8 +227,8 @@ if(manifold){
   }
   for (int i = L+1; i < 2*L+1; i++)
   {
-   Xaa.block<3,1>(6,i) =   VIOUtil::LogSO3(xman * VIOUtil::expSO3(gamma * sqrtPaa.block(6,i - L - 1,3,1)));
-   Xa_manifold_in.push_back(xman * VIOUtil::expSO3(-gamma * sqrtPaa.block(6,i - L - 1,3,1)));
+   Xaa.block<3,1>(6,i) =   VIOUtil::LogSO3(xman * VIOUtil::expSO3(-gamma * sqrtPaa.block<3,1>(6,i - L - 1)));
+   Xa_manifold_in.push_back(xman * VIOUtil::expSO3(-gamma * sqrtPaa.block<3,1>(6,i - L - 1)));
   }
 
 }
