@@ -223,13 +223,13 @@ if(manifold){
 
   for (int i = 1; i < L+1; i++)
   {
-   Xaa.block<3,1>(6,i) =   VIOUtil::LogSO3(xman * VIOUtil::expSO3(1 * sqrtPaa.block(6,i - 1,3,1)));
-   Xa_manifold_in.push_back(xman * VIOUtil::expSO3(1 * sqrtPaa.block(6,i - 1,3,1)));
+   Xaa.block<3,1>(6,i) =   VIOUtil::LogSO3(xman * VIOUtil::expSO3(gamma * sqrtPaa.block(6,i - 1,3,1)));
+   Xa_manifold_in.push_back(xman * VIOUtil::expSO3(gamma * sqrtPaa.block(6,i - 1,3,1)));
   }
   for (int i = L+1; i < 2*L+1; i++)
   {
-   Xaa.block<3,1>(6,i) =   VIOUtil::LogSO3(xman * VIOUtil::expSO3(-1 * sqrtPaa.block<3,1>(6,i - L - 1)));
-   Xa_manifold_in.push_back(xman * VIOUtil::expSO3(-1 * sqrtPaa.block<3,1>(6,i - L - 1)));
+   Xaa.block<3,1>(6,i) =   VIOUtil::LogSO3(xman * VIOUtil::expSO3(-gamma * sqrtPaa.block<3,1>(6,i - L - 1)));
+   Xa_manifold_in.push_back(xman * VIOUtil::expSO3(-gamma * sqrtPaa.block<3,1>(6,i - L - 1)));
   }
 
 }

@@ -6,7 +6,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake)
 
 find_package(cmake_modules REQUIRED)
 find_package(catkin REQUIRED COMPONENTS roscpp sensor_msgs)
-find_package(Eigen REQUIRED)
+find_package(Eigen 3 REQUIRED)
 
 
 catkin_package(CATKIN_DEPENDS roscpp sensor_msgs)
