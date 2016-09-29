@@ -107,7 +107,7 @@ Eigen::Matrix<double, 6, 6> M;
   PropagateAprioriCovariance(time, kx, ku, kt, kxManHist);
 
   Eigen::Matrix<double, Eigen::Dynamic, 1> x = *kx;
-  Eigen::Matrix<double, 3, 3> x_manifold = meanR;//*kxManHist;
+  Eigen::Matrix<double, 3, 3> x_manifold = *kxManHist;
 
 
   // Get Measurement
@@ -119,7 +119,6 @@ Eigen::Matrix<double, 6, 6> M;
   // Innovation
   Eigen::Matrix<double, Eigen::Dynamic, 1> inno = z - za;
 
-  if(manifold){
   inno.block<3,1>(3,0) = VIOUtil::LogSO3(x_manifold.transpose() * VIOUtil::expSO3(z.block<3,1>(3,0)));//*VIOUtil::expSO3(z.block<3,1>(3,0)));
 
   // Posteriori Mean
@@ -131,25 +130,17 @@ Eigen::Matrix<double, 6, 6> M;
   x_manifold = x_manifold * VIOUtil::expSO3(k_inno.block<3,1>(6,0));
   M = VIOUtil::parallel_transport_trans(k_inno.block(0, 0, 6, 1));
 
-}
-else{
-  // Handle angle jumps
-  inno(3,0) = asin(sin(inno(3,0)));
-  // Posteriori Mean
-  x += K * inno;
-}
   *kx = x;
   *kxManHist = x_manifold;
   // Posteriori Covariance
   P = P - K * H * P;
   //Parallel transport
-  if(manifold){
+
   /*P.block<3,3>(6,6) = M.block<3,3>(3,3) * P.block<3,3>(6,6) * M.block<3,3>(3,3).transpose();
   P.block(6, 0, 3, 6) = M.block<3,3>(3,3) * P.block(6, 0, 3, 6) ;
   P.block(0, 6, 6, 3) = P.block(0, 6, 6, 3) * M.block<3,3>(3,3).transpose();
   P.block(0, 9, 3, P.cols() - 3) = M.block<3,3>(3,3) * P.block(0, 9, 3, P.cols() - 3);
   P.block(9, 0, P.rows() - 3, 3) = P.block(9, 0, P.rows() - 3, 3) * M.block<3,3>(3,3).transpose();*/
-}
   // Propagate Aposteriori State
 
   PropagateAposterioriState(kx, kxManHist, ku, kt);
@@ -213,8 +204,6 @@ void QuadrotorUKF::GenerateSigmaPoints()
     xaaMat.col(i) = xaa;
 
 Xaa.col(0) = xaa;
-
-if(manifold){
   Xa_manifold_in.clear();
   Xa_manifold_in.push_back(xman);
   Xaa.block(0,1,L,L) =   xaaMat.block(0,0,L,L) + gamma * sqrtPaa;
@@ -232,11 +221,6 @@ if(manifold){
    Xa_manifold_in.push_back(xman * VIOUtil::expSO3(-gamma * sqrtPaa.block<3,1>(6,i - L - 1)));
   }
 
-}
-else{
-  Xaa.block(0,1,L,L) =   xaaMat.block(0,0,L,L) + gamma * sqrtPaa;
-  Xaa.block(0,L+1,L,L) = xaaMat.block(0,0,L,L) - gamma * sqrtPaa;
-}
   //Xa = Xaa.rows(0, stateCnt-1);
   //Va = Xaa.rows(stateCnt, L-1);
   Xa = Xaa.block(0,0,stateCnt, 2*L+1);
@@ -246,10 +230,7 @@ else{
 Eigen::Matrix<double, Eigen::Dynamic, 1> QuadrotorUKF::ProcessModel(const Eigen::Matrix<double, Eigen::Dynamic, 1>& x, const Eigen::Matrix<double, 6, 1>& u, const Eigen::Matrix<double, Eigen::Dynamic, 1>& v, double dt)
 {
   Eigen::Matrix<double, 3, 3> R;
-  if(manifold)
-  R = VIOUtil::expSO3(x.block<3,1>(6,0));	
-  else
-  R = VIOUtil::ypr_to_R(x.block<3,1>(6,0));//x.rows(6,8)
+  R = VIOUtil::expSO3(x.block<3,1>(6,0));
   Eigen::Matrix<double, 3, 1> ag;
   ag(0,0) = 0;
   ag(1,0) = 0;
@@ -278,10 +259,7 @@ Eigen::Matrix<double, Eigen::Dynamic, 1> QuadrotorUKF::ProcessModel(const Eigen:
   //xt.rows(9,11) = x.rows(9,11)  + v.rows(6,8) *dt;
   xt.block<3,1>(0,0)  = x.block<3,1>(0,0) + x.block<3,1>(3,0)*dt + ddx*dt*dt/2;
   xt.block<3,1>(3,0)  =                     x.block<3,1>(3,0)    + ddx*dt     ;
-  if(manifold)
   xt.block<3,1>(6,0)  = VIOUtil::LogSO3(Rt);
-  else
-  xt.block<3,1>(6,0)  = VIOUtil::R_to_ypr(Rt);
   xt.block<3,1>(9,0) = x.block<3,1>(9,0)  + v.block<3,1>(6,0) *dt;
   return xt;
 }
@@ -389,10 +367,7 @@ void QuadrotorUKF::PropagateAprioriCovariance(const ros::Time time,
   xManHist.erase(k5, xManHist.end());
   // rot, gravity
   Eigen::Matrix<double, 3, 3> pR;
-  if(manifold)
   pR = pxManHist;//VIOUtil::expSO3(px.block<3,1>(6,0));//px.rows(6,8)
-  else
-  pR = VIOUtil::ypr_to_R(px.block<3,1>(6,0));//px.rows(6,8)
   Eigen::Matrix<double, 3, 1> ag;
   ag(0,0) = 0;
   ag(1,0) = 0;
@@ -415,7 +390,6 @@ void QuadrotorUKF::PropagateAprioriCovariance(const ros::Time time,
   u.block<3,1>(3,0) = w;
   // Generate sigma points
   GenerateSigmaPoints();
-if(manifold){
   std::vector<Eigen::Matrix<double, 3, 3> > vec_R;	
 
   // Mean
@@ -444,38 +418,7 @@ if(manifold){
     d.block(6,0,3,1) = VIOUtil::LogSO3(meanR.transpose() * Xa_manifold_in.at(k));
     P += wc(0,k) * d * d.transpose();
   }
-}
 
-else{
-  // Mean
-  for (int k = 0; k < 2*L+1; k++){
-    Xa.col(k) = ProcessModel(Xa.col(k), u, Va.col(k), dt);
-  }
-  // Handle jump between +pi and -pi !
-  Eigen::MatrixXd::Index maxRow, maxCol;
-  double minYaw = Xa.row(6).minCoeff();// = min(Xa.row(6), 1);
-  double maxYaw = Xa.row(6).maxCoeff();// = max(Xa.row(6), 1);
-  if (fabs(minYaw - maxYaw) > PI)
-  {
-    for (int k = 0; k < 2*L+1; k++)
-      if (Xa(6,k) < 0)
-        Xa(6,k) += 2*PI;
-  }
-  // Now we can get the mean...
-  Eigen::Matrix<double, Eigen::Dynamic, 1> xa;
-  xa.resize(Xa.rows(),1);
-  for (int i = 0; i < 2 * L + 1; i++){
-   xa += wm(0,i) * Xa.col(i);// = sum( repmat(wm,stateCnt,1) % Xa, 1 );
-}
-
-  // Covariance
-  P.setZero(Xa.rows(), Xa.rows());//.zeros();
-  for (int k = 0; k < 2*L+1; k++)
-  {
-    Eigen::Matrix<double, Eigen::Dynamic, 1> d = Xa.col(k) - xa;
-    P += wc(0,k) * d * d.transpose();
-  }
-}
   return;
 }
 

@@ -81,9 +81,6 @@ class QuadrotorUKF
 
     QuadrotorUKF();
     ~QuadrotorUKF();
-
-    //manifold option
-    bool manifold;
     
     //bool QuadrotorUKF::isInitialized() { return (initMeasure && initGravity); }();
     bool isInitialized();
