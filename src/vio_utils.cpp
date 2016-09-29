@@ -138,7 +138,7 @@ do
   sum_res.setZero();
   for (int i = 0; i < T.size(); i++)
   {
-    sum_res+=w(i,0) * VIOUtil::LogSE3(mu.inverse() * T.at(i));
+    sum_res += w(i,0) * VIOUtil::LogSE3(mu.inverse() * T.at(i));
 
   }
   //now compute the final mean
@@ -160,12 +160,13 @@ do
   sum_res.setZero();
   for (int i = 0; i < R.size(); i++)
   {
-    sum_res+=w(i,0) * VIOUtil::LogSO3(mu.transpose() * R.at(i));
+    sum_res += w(i,0) * VIOUtil::LogSO3(mu.transpose() * R.at(i));
   }
   //now compute the final mean
   mu = mu*VIOUtil::expSO3(sum_res);
 
-}while(sum_res.norm() > 0.0001);
+}while(sum_res.norm() > 0.001);
+
  return mu;
 }
 

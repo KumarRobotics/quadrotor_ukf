@@ -6,7 +6,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake)
 
 find_package(cmake_modules REQUIRED)
 find_package(catkin REQUIRED COMPONENTS roscpp sensor_msgs)
-find_package(Eigen 3 REQUIRED)
+find_package(Eigen REQUIRED)
 
 
 catkin_package(CATKIN_DEPENDS roscpp sensor_msgs)
@@ -26,7 +26,7 @@ set(UKF_HEADER_FILES
 
 include_directories(
   include
-  ${EIGEN3_INCLUDE_DIR}
+  ${EIGEN_INCLUDE_DIR}
 #  LIBRARIES imu_3dm_gx3
 #  CATKIN_DEPENDS other_catkin_pkg
 #  DEPENDS system_lib
