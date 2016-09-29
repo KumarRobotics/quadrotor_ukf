@@ -230,7 +230,7 @@ int main(int argc, char** argv)
   // Initialize UKF
   quadrotorUKF.SetUKFParameters(alpha, beta, kappa);
   quadrotorUKF.SetImuCovariance(Rv);
-  quadrotorUKF.manifold = false;
+  quadrotorUKF.manifold = true;
 
   ros::Subscriber subImu  = n.subscribe("imu" ,      10, imu_callback, ros::TransportHints().tcpNoDelay());
   ros::Subscriber subSLAM = n.subscribe("odom_slam", 10, slam_callback, ros::TransportHints().tcpNoDelay());

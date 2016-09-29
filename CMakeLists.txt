@@ -26,7 +26,7 @@ set(UKF_HEADER_FILES
 
 include_directories(
   include
-  ${Eigen_INCLUDE_DIRS}
+  ${EIGEN3_INCLUDE_DIR}
 #  LIBRARIES imu_3dm_gx3
 #  CATKIN_DEPENDS other_catkin_pkg
 #  DEPENDS system_lib
