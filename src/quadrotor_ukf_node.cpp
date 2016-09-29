@@ -126,26 +126,16 @@ void slam_callback(const nav_msgs::Odometry::ConstPtr& msg)
   H_R_R0 = H_C_B*H_C_C0*H_C_B.inverse();
   //Set the rotation
   Eigen::Matrix<double, 4, 1> q_R_R0 = VIOUtil::MatToQuat(H_R_R0.block(0, 0, 3, 3));
-
   // Assemble measurement
   Eigen::Matrix<double, 6, 1> z_new;
   z_new(0,0) = H_R_R0(0,3);
   z_new(1,0) = H_R_R0(1,3);
   z_new(2,0) = H_R_R0(2,3);
   //define the matrix to rotate in the original frame
-  quadrotorUKF.manifold = true;
-  if(quadrotorUKF.manifold){
-  Eigen::Matrix<double, 3, 1> ypr_new = VIOUtil::LogSO3(VIOUtil::QuatToMat(q_R_R0));//R_to_ypr(H_R_R0.submat(0, 0, 2, 2));
-  z_new(3,0) = ypr_new(0,0);
-  z_new(4,0) = ypr_new(1,0);
-  z_new(5,0) = ypr_new(2,0);  
-  }
-  else{
   Eigen::Matrix<double, 3, 1> ypr_new = VIOUtil::R_to_ypr(VIOUtil::QuatToMat(q_R_R0));//R_to_ypr(H_R_R0.submat(0, 0, 2, 2));
   z_new(3,0) = ypr_new(0,0);
   z_new(4,0) = ypr_new(1,0);
   z_new(5,0) = ypr_new(2,0);
-  }
   //rotate the covariance
   Eigen::Matrix<double, 6, 6>  RnSLAM_new;
   RnSLAM_new.setZero();// = zeros<mat>(6,6);
