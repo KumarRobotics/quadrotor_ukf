@@ -234,7 +234,6 @@ void QuadrotorUKF::GenerateSigmaPoints()
   //Va = Xaa.rows(stateCnt, L-1);
   Xa = Xaa.block(0,0,stateCnt, 2*L+1);
   Va = Xaa.block(stateCnt,0,L-stateCnt, 2*L+1);
-  cout<<"Xain:"<<Xa<<endl;
 }
 
 Eigen::Matrix<double, Eigen::Dynamic, 1> QuadrotorUKF::ProcessModel(const Eigen::Matrix<double, Eigen::Dynamic, 1>& x, const Eigen::Matrix<double, 6, 1>& u, const Eigen::Matrix<double, Eigen::Dynamic, 1>& v, double dt)
@@ -405,7 +404,7 @@ cout<<"u:"<<u<<endl;
   // Generate sigma points
   GenerateSigmaPoints();
   std::vector<Eigen::Matrix<double, 3, 3> > vec_R;	
-
+Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> Xain = Xa;
   // Mean
   for (int k = 0; k < 2*L+1; k++){
     //Xa.col(k) = ProcessModel(Xa.col(k), u, Va.col(k), dt);
@@ -413,7 +412,7 @@ cout<<"u:"<<u<<endl;
     //Xa.col(k) = ProcessModel(Xa.col(k), u, Va.col(k), dt);
     vec_R.push_back(Xa_manifold_in.at(k));
   }
-  cout<<"Xout:"<<Xa<<endl;
+  cout<<"dXa:"<<Xa - Xain<<endl;
 
    // Now we can get the mean...
   Eigen::Matrix<double, Eigen::Dynamic, 1> xa;
@@ -422,6 +421,8 @@ cout<<"u:"<<u<<endl;
   {
   	xa += wm(0,i) * Xa.col(i);// = sum( repmat(wm,stateCnt,1) % Xa, 1 );
   }
+    cout<<"wm:"<<wm<<endl;
+
   //compute the mean for the manifold part
   meanR = VIOUtil::MeanofSigmaPointsManifoldSO3(vec_R, wm);//VIOUtil::expSO3(xa.block<3,1>(6,0));//VIOUtil::MeanofSigmaPointsManifoldSO3(vec_R, wm);
 
