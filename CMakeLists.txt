@@ -2,10 +2,8 @@ cmake_minimum_required(VERSION 2.8.3)
 project(quadrotor_ukf)
 add_definitions(-Wall -std=c++11 -Werror=return-type ${PCL_DEFINITIONS})
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake)
-
-
 #set(CMAKE_BUILD_TYPE Release)
-IF( ${TARGET_ARCH} MATCHES "armv7")
+IF(${TARGET_ARCH} MATCHES "armv7")
   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mfpu=neon -march=armv7-a")
 ELSE()
   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mmmx -msse -msse -msse2 -msse3 -mssse3")

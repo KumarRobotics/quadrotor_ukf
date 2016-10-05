@@ -408,7 +408,7 @@ void QuadrotorUKF::PropagateAprioriCovariance(const ros::Time time,
   xa.setZero(Xa.rows(),1);
   for (int i = 0; i < 2 * L + 1; i++)
   {
-  	xa += wm(0,i) * Xa.col(i);// = sum( repmat(wm,stateCnt,1) % Xa, 1 );
+  	xa.noalias() += wm(0,i) * Xa.col(i);// = sum( repmat(wm,stateCnt,1) % Xa, 1 );
   }
 
   //compute the mean for the manifold part
@@ -423,7 +423,7 @@ void QuadrotorUKF::PropagateAprioriCovariance(const ros::Time time,
     Eigen::Matrix<double, Eigen::Dynamic, 1> d = Xa.col(k) - xa;
     //redefine the part for the manifold
     d.block<3,1>(6,0) = VIOUtil::LogSO3(Xa_manifold_in.at(k));
-    P += wc(0,k) * d * d.transpose();
+    P.noalias() += wc(0,k) * d * d.transpose();
   }
 
   return;

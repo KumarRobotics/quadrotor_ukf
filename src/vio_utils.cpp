@@ -158,7 +158,7 @@ Eigen::Matrix<double, 3, 3> VIOUtil::MeanofSigmaPointsManifoldSO3(const std::vec
 do
 {
   sum_res.setZero();
-  for (int i = 0; i < R.size(); i++)
+  for (unsigned int i = 0; i < R.size(); i++)
   {
     sum_res += w(0,i) * VIOUtil::LogSO3(mu.transpose() * R.at(i));
   }
