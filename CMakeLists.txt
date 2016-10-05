@@ -4,6 +4,7 @@ add_definitions(-Wall -std=c++11 -Werror=return-type ${PCL_DEFINITIONS})
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake)
 #set(CMAKE_BUILD_TYPE Release)
 #set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS} "-msse2")
+ set_property(TARGET quadrotor_ukf APPEND_STRING PROPERTY COMPILE_FLAGS "-O3 ")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsee -funsafe-loop-optimizations -fno-signed-zeros -fno-math-errno -funroll-loops")
 
 find_package(cmake_modules REQUIRED)
