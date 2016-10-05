@@ -133,6 +133,7 @@ bool QuadrotorUKF::MeasurementUpdateSLAM(const Eigen::Matrix<double, Eigen::Dyna
   Eigen::Matrix<double, 6, 6> M = VIOUtil::parallel_transport_trans(k_inno_parallel);
 
   *kx = x;
+  cout<<"state_out:"<<x<<endl;
   *kxManHist = x_manifold;
   // Posteriori Covariance
   P = P - K * H * P;
