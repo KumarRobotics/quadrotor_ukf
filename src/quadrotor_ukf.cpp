@@ -309,7 +309,7 @@ void QuadrotorUKF::PropagateAprioriCovariance(const ros::Time time,
   }
   // Now we can get the mean...
   Eigen::Matrix<double, Eigen::Dynamic, 1> xa;
-  xa.resize(Xa.rows(),1);
+  xa.setZero(Xa.rows(),1);
   for (int i = 0; i < 2 * L + 1; i++){
    xa += wm(0,i) * Xa.col(i);// = sum( repmat(wm,stateCnt,1) % Xa, 1 );
 }
