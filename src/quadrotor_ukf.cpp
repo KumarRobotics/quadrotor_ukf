@@ -390,11 +390,11 @@ void QuadrotorUKF::PropagateAprioriCovariance(const ros::Time time,
   Eigen::Matrix<double, 6, 1> u;
   u.block<3,1>(0,0) = a;
   u.block<3,1>(3,0) = w;
-cout<<"u:"<<u<<endl;
+
   // Generate sigma points
   GenerateSigmaPoints();
   std::vector<Eigen::Matrix<double, 3, 3> > vec_R;	
-Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> Xain = Xa;
+  Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> Xain = Xa;
   // Mean
   for (int k = 0; k < 2*L+1; k++){
     //Xa.col(k) = ProcessModel(Xa.col(k), u, Va.col(k), dt);

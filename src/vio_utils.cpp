@@ -168,8 +168,6 @@ do
 
 }while(sum_res.norm() > 0.001);
 
-   cout<<"mu:"<<mu<<endl;
-
  return mu;
 }
 
