@@ -2,11 +2,9 @@ cmake_minimum_required(VERSION 2.8.3)
 project(quadrotor_ukf)
 add_definitions(-Wall -std=c++11 -Werror=return-type ${PCL_DEFINITIONS})
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake)
+
+
 #set(CMAKE_BUILD_TYPE Release)
-
-# Set build flags, set ARM_ARCHITECTURE environment variable on Odroid
-SET(CMAKE_CXX_FLAGS "-Wall -D_LINUX -D_REENTRANT -march=native -Wno-unused-variable -Wno-unused-but-set-variable -Wno-unknown-pragmas")
-
 IF( ${TARGET_ARCH} MATCHES "armv7")
   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mfpu=neon -march=armv7-a")
 ELSE()
@@ -17,7 +15,6 @@ IF(CMAKE_COMPILER_IS_GNUCC)
 ELSE()
   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 ENDIF()
-SET(CMAKE_CXX_FLAGS_R)
 
 find_package(cmake_modules REQUIRED)
 find_package(catkin REQUIRED COMPONENTS roscpp sensor_msgs)
