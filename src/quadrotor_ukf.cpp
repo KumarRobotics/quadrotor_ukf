@@ -117,20 +117,12 @@ bool QuadrotorUKF::MeasurementUpdateSLAM(const Eigen::Matrix<double, Eigen::Dyna
   // Compute Kalman Gain
   Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> S = H * P * H.transpose() + RnSLAM;
   Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> K = P * H.transpose() * S.inverse();
-        cout<<"P:"<<P<<endl;
-
-      cout<<"S.inverse():"<<S.inverse()<<endl;
-
   // Innovation
   Eigen::Matrix<double, Eigen::Dynamic, 1> inno = z - za;
 
   inno.block<3,1>(3,0) = VIOUtil::LogSO3(x_manifold.transpose() * VIOUtil::expSO3(z.block<3,1>(3,0)));//*VIOUtil::expSO3(z.block<3,1>(3,0)));
-    cout<<"K:"<<K<<endl;
-
   // Posteriori Mean
   Eigen::Matrix<double, Eigen::Dynamic, 1> k_inno = K * inno;
-      cout<<"inno:"<<inno<<endl;
-
   x.block<6,1>(0,0) += k_inno.block<6,1>(0,0);
   //x.block<3,1>(6,0) = VIOUtil::LogSO3(x_manifold * VIOUtil::expSO3(k_inno.block<3,1>(6,0)));
   x.block<3,1>(9,0) += k_inno.block<3,1>(9,0);
@@ -142,7 +134,6 @@ bool QuadrotorUKF::MeasurementUpdateSLAM(const Eigen::Matrix<double, Eigen::Dyna
   Eigen::Matrix<double, 6, 6> M = VIOUtil::parallel_transport_trans(k_inno_parallel);
 
   *kx = x;
-  cout<<"state_out:"<<x<<endl;
   *kxManHist = x_manifold;
   // Posteriori Covariance
   P = P - K * H * P;
@@ -199,8 +190,7 @@ void QuadrotorUKF::GenerateSigmaPoints()
   Paa.block(stateCnt,stateCnt, L - stateCnt, L - stateCnt) = Rv;
   // Matrix square root
   Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> sqrtPaa = Paa.llt().matrixL();
-  cout<<"state:"<<x<<endl;
-  cout<<"sqrtPaa:"<<sqrtPaa<<endl;
+
   // Mean
   //Xaa.col(0) = xaa;
   //Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>  xaaMat = repmat(xaa,1,L);
@@ -412,23 +402,20 @@ Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> Xain = Xa;
     //Xa.col(k) = ProcessModel(Xa.col(k), u, Va.col(k), dt);
     vec_R.push_back(Xa_manifold_in.at(k));
   }
-  cout<<"dXa:"<<Xa - Xain<<endl;
 
    // Now we can get the mean...
   Eigen::Matrix<double, Eigen::Dynamic, 1> xa;
-  xa.resize(Xa.rows(),1);
+  xa.setZero(Xa.rows(),1);
   for (int i = 0; i < 2 * L + 1; i++)
   {
   	xa += wm(0,i) * Xa.col(i);// = sum( repmat(wm,stateCnt,1) % Xa, 1 );
   }
-    cout<<"wm:"<<wm<<endl;
 
   //compute the mean for the manifold part
   meanR = VIOUtil::MeanofSigmaPointsManifoldSO3(vec_R, wm);//VIOUtil::expSO3(xa.block<3,1>(6,0));//VIOUtil::MeanofSigmaPointsManifoldSO3(vec_R, wm);
 
   //    Eigen::Matrix<double, 3, 3> meanRtmp = VIOUtil::MeanofSigmaPointsManifoldSO3(vec_R, wm);
   xa.block<3,1>(6,0)  = VIOUtil::LogSO3(meanR);
-  cout<<"xa:"<<xa<<endl;
   // Covariance
   P.setZero(Xa.rows(), Xa.rows());//.zeros();
   for (int k = 0; k < 2*L+1; k++)
