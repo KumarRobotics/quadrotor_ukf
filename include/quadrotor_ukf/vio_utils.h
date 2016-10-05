@@ -40,7 +40,7 @@ struct VIOUtil
     static Eigen::Matrix<double, 3,3> getSkew(const Eigen::Matrix<double, 3,1>& twist);
     static Eigen::Matrix<double, 6, 6> adjSE3(const Eigen::Matrix<double, 4, 4> T);
     static Eigen::Matrix<double, 4, 4> MeanofSigmaPointsManifold(const std::vector<Eigen::Matrix<double, 4, 4> >& T, const Eigen::Matrix<double, Eigen::Dynamic, 1>& w);
-    static Eigen::Matrix<double, 3, 3> MeanofSigmaPointsManifoldSO3(const std::vector<Eigen::Matrix<double, 3, 3> >& R, const Eigen::Matrix<double, Eigen::Dynamic, 1>& w);
+    static Eigen::Matrix<double, 3, 3> MeanofSigmaPointsManifoldSO3(const std::vector<Eigen::Matrix<double, 3, 3> >& R, const Eigen::Matrix<double, 1, Eigen::Dynamic>& w);
 
 
     // calculates the parallel transport of the covariance sigma along the line $exp_G(dx*t)$ for $t \in [0,1]$

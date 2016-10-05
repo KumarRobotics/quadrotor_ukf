@@ -104,6 +104,7 @@ bool QuadrotorUKF::MeasurementUpdateSLAM(const Eigen::Matrix<double, Eigen::Dyna
   std::list<Eigen::Matrix<double, Eigen::Dynamic, 1> >::iterator ku;
   std::list<ros::Time>::iterator kt;
   std::list<Eigen::Matrix<double, 3, 3> >::iterator kxManHist;
+
   PropagateAprioriCovariance(time, kx, ku, kt, kxManHist);
 
   Eigen::Matrix<double, Eigen::Dynamic, 1> x = *kx;
@@ -120,10 +121,8 @@ bool QuadrotorUKF::MeasurementUpdateSLAM(const Eigen::Matrix<double, Eigen::Dyna
   Eigen::Matrix<double, Eigen::Dynamic, 1> inno = z - za;
 
   inno.block<3,1>(3,0) = VIOUtil::LogSO3(x_manifold.transpose() * VIOUtil::expSO3(z.block<3,1>(3,0)));//*VIOUtil::expSO3(z.block<3,1>(3,0)));
-
   // Posteriori Mean
   Eigen::Matrix<double, Eigen::Dynamic, 1> k_inno = K * inno;
-
   x.block<6,1>(0,0) += k_inno.block<6,1>(0,0);
   x.block<3,1>(6,0) = VIOUtil::LogSO3(x_manifold * VIOUtil::expSO3(k_inno.block<3,1>(6,0)));
   x.block<3,1>(9,0) += k_inno.block<3,1>(9,0);
@@ -210,8 +209,8 @@ void QuadrotorUKF::GenerateSigmaPoints()
   //redefine the sigma points for the manifold part
   for (int i = 1; i < L+1; i++)
   {
-   Xaa.block<3,1>(6,i) =   VIOUtil::LogSO3(xman * VIOUtil::expSO3(gamma * sqrtPaa.block(6,i - 1,3,1)));
-   Xa_manifold_in.push_back(xman * VIOUtil::expSO3(gamma * sqrtPaa.block(6,i - 1,3,1)));
+   Xaa.block<3,1>(6,i) =   VIOUtil::LogSO3(xman * VIOUtil::expSO3(gamma * sqrtPaa.block<3,1>(6,i - 1)));
+   Xa_manifold_in.push_back(xman * VIOUtil::expSO3(gamma * sqrtPaa.block<3,1>(6,i - 1)));
   }
   for (int i = L+1; i < 2*L+1; i++)
   {
@@ -229,6 +228,7 @@ Eigen::Matrix<double, Eigen::Dynamic, 1> QuadrotorUKF::ProcessModel(const Eigen:
 {
   Eigen::Matrix<double, 3, 3> R;
   R = VIOUtil::expSO3(x.block<3,1>(6,0));
+
   Eigen::Matrix<double, 3, 1> ag;
   ag(0,0) = 0;
   ag(1,0) = 0;
@@ -275,6 +275,7 @@ Eigen::Matrix<double, Eigen::Dynamic, 1> QuadrotorUKF::ProcessModelManifold(cons
   // Acceleration
   Eigen::Matrix<double, Eigen::Dynamic, 1> a = u.block<3,1>(0,0) + v.block<3,1>(0,0);//u.rows(0,2) + v.rows(0,2);
   Eigen::Matrix<double, Eigen::Dynamic, 1> ddx = R * (a - x.block<3,1>(9,0)) - ag;//R * (a - x.rows(9,11)) - ag;
+
 
  // Rotation
   Eigen::Matrix<double, 3, 1> w = u.block<3,1>(3,0) + v.block<3,1>(3,0);//u.rows(3,5) + v.rows(3,5);
@@ -374,6 +375,7 @@ void QuadrotorUKF::PropagateAprioriCovariance(const ros::Time time,
   // Linear Acceleration
   Eigen::Matrix<double, 3, 1> dv = cx.block<3,1>(3,0) - px.block<3,1>(3,0);//rows(3,5);
   Eigen::Matrix<double, 3, 1> a = pR.transpose() * (dv / dt + ag) + px.block<3,1>(9,0);//.rows(9,11);
+
   // Angular Velocity
   Eigen::Matrix<double, 3, 3> dR;
   dR = pR.transpose() * cxManHist;//VIOUtil::expSO3(cx.block<3,1>(6,0));//cx.rows(6,8)
@@ -386,6 +388,7 @@ void QuadrotorUKF::PropagateAprioriCovariance(const ros::Time time,
   Eigen::Matrix<double, 6, 1> u;
   u.block<3,1>(0,0) = a;
   u.block<3,1>(3,0) = w;
+
   // Generate sigma points
   GenerateSigmaPoints();
   std::vector<Eigen::Matrix<double, 3, 3> > vec_R;	
@@ -394,8 +397,10 @@ void QuadrotorUKF::PropagateAprioriCovariance(const ros::Time time,
   for (int k = 0; k < 2*L+1; k++){
     //Xa.col(k) = ProcessModel(Xa.col(k), u, Va.col(k), dt);
     Xa.col(k) = ProcessModelManifold(Xa.col(k), Xa_manifold_in.at(k), u, Va.col(k), dt);
+    //Xa.col(k) = ProcessModel(Xa.col(k), u, Va.col(k), dt);
     vec_R.push_back(Xa_manifold_in.at(k));
   }
+
    // Now we can get the mean...
   Eigen::Matrix<double, Eigen::Dynamic, 1> xa;
   xa.resize(Xa.rows(),1);
@@ -404,7 +409,10 @@ void QuadrotorUKF::PropagateAprioriCovariance(const ros::Time time,
   	xa += wm(0,i) * Xa.col(i);// = sum( repmat(wm,stateCnt,1) % Xa, 1 );
   }
   //compute the mean for the manifold part
-  meanR = VIOUtil::MeanofSigmaPointsManifoldSO3(vec_R, wm);
+  meanR = VIOUtil::MeanofSigmaPointsManifoldSO3(vec_R, wm);//VIOUtil::expSO3(xa.block<3,1>(6,0));//VIOUtil::MeanofSigmaPointsManifoldSO3(vec_R, wm);
+
+  //    Eigen::Matrix<double, 3, 3> meanRtmp = VIOUtil::MeanofSigmaPointsManifoldSO3(vec_R, wm);
+  //xa.block<3,1>(6,0)  = VIOUtil::LogSO3(meanR);
 
   // Covariance
   P.setZero(Xa.rows(), Xa.rows());//.zeros();
@@ -412,7 +420,7 @@ void QuadrotorUKF::PropagateAprioriCovariance(const ros::Time time,
   {
     Eigen::Matrix<double, Eigen::Dynamic, 1> d = Xa.col(k) - xa;
     //redefine the part for the manifold
-    d.block(6,0,3,1) = VIOUtil::LogSO3(meanR.transpose() * Xa_manifold_in.at(k));
+    d.block<3,1>(6,0) = VIOUtil::LogSO3(Xa_manifold_in.at(k));
     P += wc(0,k) * d * d.transpose();
   }
 
@@ -434,7 +442,7 @@ void QuadrotorUKF::PropagateAposterioriState(std::list<Eigen::Matrix<double, Eig
     //*_kx = ProcessModel(*kx, *_ku, Eigen::MatrixXd::Zero(procNoiseCnt,1), (*_kt - *kt).toSec());
 
     Eigen::Matrix<double, 3, 3>  xManHisttmp = *kxManHist;
-    *_kx = ProcessModelManifold(*kx, xManHisttmp, *_ku, Eigen::MatrixXd::Zero(procNoiseCnt,1), (*_kt - *kt).toSec());
+    *_kx = ProcessModelManifold(*kx, xManHisttmp, *_ku,  Eigen::MatrixXd::Zero(procNoiseCnt,1), (*_kt - *kt).toSec());
     *_kxManHist = xManHisttmp;
   }
 }
