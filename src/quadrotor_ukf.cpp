@@ -424,8 +424,8 @@ void QuadrotorUKF::PropagateAprioriCovariance(const ros::Time time,
   meanR = VIOUtil::MeanofSigmaPointsManifoldSO3(vec_R, wm);//VIOUtil::expSO3(xa.block<3,1>(6,0));//VIOUtil::MeanofSigmaPointsManifoldSO3(vec_R, wm);
 
   //    Eigen::Matrix<double, 3, 3> meanRtmp = VIOUtil::MeanofSigmaPointsManifoldSO3(vec_R, wm);
-  //xa.block<3,1>(6,0)  = VIOUtil::LogSO3(meanR);
-
+  xa.block<3,1>(6,0)  = VIOUtil::LogSO3(meanR);
+  cout<<"xa:"<<xa<<endl;
   // Covariance
   P.setZero(Xa.rows(), Xa.rows());//.zeros();
   for (int k = 0; k < 2*L+1; k++)
