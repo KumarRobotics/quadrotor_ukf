@@ -121,8 +121,12 @@ bool QuadrotorUKF::MeasurementUpdateSLAM(const Eigen::Matrix<double, Eigen::Dyna
   Eigen::Matrix<double, Eigen::Dynamic, 1> inno = z - za;
 
   inno.block<3,1>(3,0) = VIOUtil::LogSO3(x_manifold.transpose() * VIOUtil::expSO3(z.block<3,1>(3,0)));//*VIOUtil::expSO3(z.block<3,1>(3,0)));
+    cout<<"K:"<<K<<endl;
+
   // Posteriori Mean
   Eigen::Matrix<double, Eigen::Dynamic, 1> k_inno = K * inno;
+      cout<<"inno:"<<inno<<endl;
+
   x.block<6,1>(0,0) += k_inno.block<6,1>(0,0);
   //x.block<3,1>(6,0) = VIOUtil::LogSO3(x_manifold * VIOUtil::expSO3(k_inno.block<3,1>(6,0)));
   x.block<3,1>(9,0) += k_inno.block<3,1>(9,0);
