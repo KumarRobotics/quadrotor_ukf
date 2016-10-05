@@ -235,7 +235,6 @@ void QuadrotorUKF::GenerateSigmaPoints()
   Xa = Xaa.block(0,0,stateCnt, 2*L+1);
   Va = Xaa.block(stateCnt,0,L-stateCnt, 2*L+1);
   cout<<"Xa:"<<Xa<<endl;
-  cout<<"Va:"<<Va<<endl;
 }
 
 Eigen::Matrix<double, Eigen::Dynamic, 1> QuadrotorUKF::ProcessModel(const Eigen::Matrix<double, Eigen::Dynamic, 1>& x, const Eigen::Matrix<double, 6, 1>& u, const Eigen::Matrix<double, Eigen::Dynamic, 1>& v, double dt)
