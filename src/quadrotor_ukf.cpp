@@ -234,7 +234,7 @@ void QuadrotorUKF::GenerateSigmaPoints()
   //Va = Xaa.rows(stateCnt, L-1);
   Xa = Xaa.block(0,0,stateCnt, 2*L+1);
   Va = Xaa.block(stateCnt,0,L-stateCnt, 2*L+1);
-  cout<<"Xa:"<<Xa<<endl;
+  cout<<"Xain:"<<Xa<<endl;
 }
 
 Eigen::Matrix<double, Eigen::Dynamic, 1> QuadrotorUKF::ProcessModel(const Eigen::Matrix<double, Eigen::Dynamic, 1>& x, const Eigen::Matrix<double, 6, 1>& u, const Eigen::Matrix<double, Eigen::Dynamic, 1>& v, double dt)
@@ -413,6 +413,7 @@ cout<<"u:"<<u<<endl;
     //Xa.col(k) = ProcessModel(Xa.col(k), u, Va.col(k), dt);
     vec_R.push_back(Xa_manifold_in.at(k));
   }
+  cout<<"Xout:"<<Xa<<endl;
 
    // Now we can get the mean...
   Eigen::Matrix<double, Eigen::Dynamic, 1> xa;
