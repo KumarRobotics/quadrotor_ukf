@@ -117,6 +117,10 @@ bool QuadrotorUKF::MeasurementUpdateSLAM(const Eigen::Matrix<double, Eigen::Dyna
   // Compute Kalman Gain
   Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> S = H * P * H.transpose() + RnSLAM;
   Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> K = P * H.transpose() * S.inverse();
+        cout<<"P:"<<P<<endl;
+
+      cout<<"S.inverse():"<<S.inverse()<<endl;
+
   // Innovation
   Eigen::Matrix<double, Eigen::Dynamic, 1> inno = z - za;
 
