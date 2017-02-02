@@ -1,5 +1,11 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(quadrotor_ukf)
+
+# set default build type
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE RelWithDebInfo)
+endif()
+
 add_definitions(-Wall -std=c++11 -Werror=return-type)
 
 IF(${TARGET_ARCH} MATCHES "armv7")
