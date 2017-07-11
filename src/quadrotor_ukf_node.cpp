@@ -54,7 +54,7 @@ void imu_callback(const sensor_msgs::Imu::ConstPtr& msg)
     //rotate the odometry before publishing
     Eigen::Matrix<float,4,4> H_V;
     H_V.setIdentity();
-    H_V.block<3,3>(0,0) = VIOUtil::ypr_to_R(x.block(6,0,3,1));
+    H_V.block<3,3>(0,0) = VIOUtil::ypr_to_R(x.block(6,0,3,1)).cast <float> ();
     H_V.block<3,1>(0,3) = x.block<3,1>(0,0);
     Eigen::Matrix<float, 4, 4> H_BAR;
     H_BAR = H_V_B*H_V*H_V_B_inv;
