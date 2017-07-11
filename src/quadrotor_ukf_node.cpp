@@ -15,8 +15,8 @@ static std::string frame_id;
 //arma::mat H_C_B = arma::eye<mat>(4,4);//Never use reshape
 Eigen::Matrix<double, 4, 4> H_C_B;
 
-Eigen::Matrix<float, 4, 4> H_V_B;
-Eigen::Matrix<float, 4, 4> H_V_B_inv;
+Eigen::Matrix<double, 4, 4> H_V_B;
+Eigen::Matrix<double, 4, 4> H_V_B_inv;
 
 void imu_callback(const sensor_msgs::Imu::ConstPtr& msg)
 {
@@ -50,18 +50,18 @@ void imu_callback(const sensor_msgs::Imu::ConstPtr& msg)
     // Publish odom
     odomUKF.header.stamp = quadrotorUKF.GetStateTime();
     odomUKF.header.frame_id = frame_id;
-    Eigen::Matrix<float, Eigen::Dynamic, 1> x = quadrotorUKF.GetState().cast <float> ();
+    Eigen::Matrix<double, Eigen::Dynamic, 1> x = quadrotorUKF.GetState();
     //rotate the odometry before publishing
-    Eigen::Matrix<float,4,4> H_V;
+    Eigen::Matrix<double,4,4> H_V;
     H_V.setIdentity();
-    H_V.block<3,3>(0,0) = VIOUtil::ypr_to_R(x.block(6,0,3,1)).cast <float> ();
+    H_V.block<3,3>(0,0) = VIOUtil::ypr_to_R(x.block(6,0,3,1));
     H_V.block<3,1>(0,3) = x.block<3,1>(0,0);
-    Eigen::Matrix<float, 4, 4> H_BAR;
+    Eigen::Matrix<double, 4, 4> H_BAR;
     H_BAR = H_V_B*H_V*H_V_B_inv;
     odomUKF.pose.pose.position.x = H_BAR(0,3);
     odomUKF.pose.pose.position.y = H_BAR(1,3);
     odomUKF.pose.pose.position.z = H_BAR(2,3);
-    Eigen::Matrix<float, 4, 1> q = VIOUtil::MatToQuat(VIOUtil::get_rotation(H_BAR));
+    Eigen::Matrix<double, 4, 1> q = VIOUtil::MatToQuat(VIOUtil::get_rotation(H_BAR));
     odomUKF.pose.pose.orientation.w = q(0,0);
     odomUKF.pose.pose.orientation.x = q(1,0);
     odomUKF.pose.pose.orientation.y = q(2,0);
@@ -232,37 +232,37 @@ int main(int argc, char** argv)
   int vehicle_id;
   n.param("vehicle_id", vehicle_id, 0);
 
-  Eigen::Matrix<float,4,4> qs;
-  n.param("distribution/posx/x1", qs(0,0), 0.000601f);
-  n.param("distribution/posx/x2", qs(0,1), 0.0f);
-  n.param("distribution/posx/x3", qs(0,2), 0.0f);
-  n.param("distribution/posx/x4", qs(0,3), 0.0f);
-  n.param("distribution/posy/y1", qs(1,0), 0.000589f);
-  n.param("distribution/posy/y2", qs(1,1), 0.0f);
-  n.param("distribution/posy/y3", qs(1,2), 0.000589f);
-  n.param("distribution/posy/y4", qs(1,3), 0.0f);
-  n.param("distribution/posz/z1", qs(2,0), 0.000589f);
-  n.param("distribution/posz/z2", qs(2,1), 0.0f);
-  n.param("distribution/posz/z3", qs(2,2), 0.000589f);
-  n.param("distribution/posz/z4", qs(2,3), 0.0f);
-  n.param("distribution/pospsi/psi1", qs(3,0), 0.000589f);
-  n.param("distribution/pospsi/psi2", qs(3,1), 0.0f);
-  n.param("distribution/pospsi/psi3", qs(3,2), 0.000589f);
-  n.param("distribution/pospsi/psi4", qs(3,3), 0.0f);
+  Eigen::Matrix<double,4,4> qs;
+  n.param("distribution/posx/x1", qs(0,0), 0.000601);
+  n.param("distribution/posx/x2", qs(0,1), 0.0);
+  n.param("distribution/posx/x3", qs(0,2), 0.0);
+  n.param("distribution/posx/x4", qs(0,3), 0.0);
+  n.param("distribution/posy/y1", qs(1,0), 0.000589);
+  n.param("distribution/posy/y2", qs(1,1), 0.0);
+  n.param("distribution/posy/y3", qs(1,2), 0.000589);
+  n.param("distribution/posy/y4", qs(1,3), 0.0);
+  n.param("distribution/posz/z1", qs(2,0), 0.000589);
+  n.param("distribution/posz/z2", qs(2,1), 0.0);
+  n.param("distribution/posz/z3", qs(2,2), 0.000589);
+  n.param("distribution/posz/z4", qs(2,3), 0.0);
+  n.param("distribution/pospsi/psi1", qs(3,0), 0.000589);
+  n.param("distribution/pospsi/psi2", qs(3,1), 0.0);
+  n.param("distribution/pospsi/psi3", qs(3,2), 0.000589);
+  n.param("distribution/pospsi/psi4", qs(3,3), 0.0);
 
   //Based on the vehicle ID fill the position
   H_V_B.setIdentity();
   H_V_B(0,3) = qs(0, vehicle_id);
   H_V_B(1,3) = qs(1, vehicle_id);
   H_V_B(2,3) = qs(2, vehicle_id);
-  Eigen::Matrix<float, 3,1> ypr;
+  Eigen::Matrix<double, 3,1> ypr;
   ypr.setZero();
   ypr(0,0) = qs(3, vehicle_id);
   //H_V_B.block<3,3>(0,0) = VIOUtil::ypr_to_R(ypr);
   H_V_B_inv = H_V_B.inverse();
 
   cout<<"H_V_B:"<<H_V_B<<endl;
-    cout<<"H_V_B_inv:"<<H_V_B_inv<<endl;
+    cout<<"H_V_B:"<<H_V_B<<endl;
 
   // Initialize UKF
   quadrotorUKF.SetUKFParameters(alpha, beta, kappa);
