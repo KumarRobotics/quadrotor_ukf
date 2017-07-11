@@ -69,9 +69,9 @@ void imu_callback(const sensor_msgs::Imu::ConstPtr& msg)
     //Eigen::Matrix<double, 3, 1> x_vel = x.block<3,1>(3,0) + VIOUtil::getSkew(VIOUtil::get_rotation(H_BAR)*H_BAR.block<3,1>(0,3))*VIOUtil::get_rotation(H_BAR)*u.block<3,1>(3,0);
     //cout<<"x_vel:"<<x_vel<<endl;
 
-    odomUKF.twist.twist.linear.x = x(0,0);
-    odomUKF.twist.twist.linear.y = x(1,0);
-    odomUKF.twist.twist.linear.z = x(2,0);
+    odomUKF.twist.twist.linear.x = x(3,0);
+    odomUKF.twist.twist.linear.y = x(4,0);
+    odomUKF.twist.twist.linear.z = x(5,0);
     odomUKF.twist.twist.angular.x = u(3,0);
     odomUKF.twist.twist.angular.y = u(4,0);
     odomUKF.twist.twist.angular.z = u(5,0);
@@ -262,7 +262,7 @@ int main(int argc, char** argv)
   H_V_B_inv = H_V_B.inverse();
 
   cout<<"H_V_B:"<<H_V_B<<endl;
-    cout<<"H_V_B:"<<H_V_B<<endl;
+    cout<<"H_V_B_inv:"<<H_V_B_inv<<endl;
 
   // Initialize UKF
   quadrotorUKF.SetUKFParameters(alpha, beta, kappa);
