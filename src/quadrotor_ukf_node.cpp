@@ -256,11 +256,11 @@ int main(int argc, char** argv)
   Eigen::Matrix<double, 3,1> ypr;
   ypr.setZero();
   ypr(0,0) = qs(3, vehicle_id);
-  H_V_B.block<3,3>(0,0) = VIOUtil::ypr_to_R(ypr);
+  //H_V_B.block<3,3>(0,0) = VIOUtil::ypr_to_R(ypr);
   H_V_B_inv = H_V_B.inverse();
 
   cout<<"H_V_B:"<<H_V_B<<endl;
-  cout<<"H_V_B_inv:"<<H_V_B_inv<<endl;
+    cout<<"H_V_B_inv:"<<H_V_B_inv<<endl;
 
   // Initialize UKF
   quadrotorUKF.SetUKFParameters(alpha, beta, kappa);
