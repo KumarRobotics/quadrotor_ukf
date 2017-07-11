@@ -50,7 +50,7 @@ void imu_callback(const sensor_msgs::Imu::ConstPtr& msg)
     // Publish odom
     odomUKF.header.stamp = quadrotorUKF.GetStateTime();
     odomUKF.header.frame_id = frame_id;
-    Eigen::Matrix<double, Eigen::Dynamic, 1> x = quadrotorUKF.GetState();
+    Eigen::Matrix<float, Eigen::Dynamic, 1> x = (float)quadrotorUKF.GetState();
     //rotate the odometry before publishing
     Eigen::Matrix<float,4,4> H_V;
     H_V.setIdentity();
