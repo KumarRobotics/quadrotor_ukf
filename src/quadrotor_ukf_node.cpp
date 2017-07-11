@@ -15,8 +15,8 @@ static std::string frame_id;
 //arma::mat H_C_B = arma::eye<mat>(4,4);//Never use reshape
 Eigen::Matrix<double, 4, 4> H_C_B;
 
-Eigen::Matrix<double, 4, 4> H_V_B;
-Eigen::Matrix<double, 4, 4> H_V_B_inv;
+Eigen::Matrix<float, 4, 4> H_V_B;
+Eigen::Matrix<float, 4, 4> H_V_B_inv;
 
 void imu_callback(const sensor_msgs::Imu::ConstPtr& msg)
 {
