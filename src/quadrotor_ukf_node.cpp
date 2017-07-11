@@ -52,11 +52,11 @@ void imu_callback(const sensor_msgs::Imu::ConstPtr& msg)
     odomUKF.header.frame_id = frame_id;
     Eigen::Matrix<double, Eigen::Dynamic, 1> x = quadrotorUKF.GetState();
     //rotate the odometry before publishing
-    Eigen::Matrix<double,4,4> H_V;
+    Eigen::Matrix<float,4,4> H_V;
     H_V.setIdentity();
     H_V.block<3,3>(0,0) = VIOUtil::ypr_to_R(x.block(6,0,3,1));
     H_V.block<3,1>(0,3) = x.block<3,1>(0,0);
-    Eigen::Matrix<double, 4, 4> H_BAR;
+    Eigen::Matrix<float, 4, 4> H_BAR;
     H_BAR = H_V_B*H_V*H_V_B_inv;
     odomUKF.pose.pose.position.x = H_BAR(0,3);
     odomUKF.pose.pose.position.y = H_BAR(1,3);
@@ -232,7 +232,7 @@ int main(int argc, char** argv)
   int vehicle_id;
   n.param("vehicle_id", vehicle_id, 0);
 
-  Eigen::Matrix<double,4,4> qs;
+  Eigen::Matrix<float,4,4> qs;
   n.param("distribution/posx/x1", qs(0,0), 0.000601);
   n.param("distribution/posx/x2", qs(0,1), 0.0);
   n.param("distribution/posx/x3", qs(0,2), 0.0);
@@ -255,7 +255,7 @@ int main(int argc, char** argv)
   H_V_B(0,3) = qs(0, vehicle_id);
   H_V_B(1,3) = qs(1, vehicle_id);
   H_V_B(2,3) = qs(2, vehicle_id);
-  Eigen::Matrix<double, 3,1> ypr;
+  Eigen::Matrix<float, 3,1> ypr;
   ypr.setZero();
   ypr(0,0) = qs(3, vehicle_id);
   //H_V_B.block<3,3>(0,0) = VIOUtil::ypr_to_R(ypr);
