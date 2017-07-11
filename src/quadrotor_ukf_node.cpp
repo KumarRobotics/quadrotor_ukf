@@ -69,9 +69,9 @@ void imu_callback(const sensor_msgs::Imu::ConstPtr& msg)
     Eigen::Matrix<double, 3, 1> x_vel = x.block<3,1>(3,0) + VIOUtil::getSkew(VIOUtil::get_rotation(H_BAR)*H_BAR.block<3,1>(0,3))*VIOUtil::get_rotation(H_BAR)*u.block<3,1>(3,0);
       cout<<"x_vel:"<<x_vel<<endl;
 
-    odomUKF.twist.twist.linear.x = x_vel(0,0);
-    odomUKF.twist.twist.linear.y = x_vel(1,0);
-    odomUKF.twist.twist.linear.z = x_vel(2,0);
+    odomUKF.twist.twist.linear.x = x(0,0);
+    odomUKF.twist.twist.linear.y = x(1,0);
+    odomUKF.twist.twist.linear.z = x(2,0);
     odomUKF.twist.twist.angular.x = u(3,0);
     odomUKF.twist.twist.angular.y = u(4,0);
     odomUKF.twist.twist.angular.z = u(5,0);
