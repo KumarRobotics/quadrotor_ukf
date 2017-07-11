@@ -61,7 +61,7 @@ void imu_callback(const sensor_msgs::Imu::ConstPtr& msg)
     odomUKF.pose.pose.position.x = H_BAR(0,3);
     odomUKF.pose.pose.position.y = H_BAR(1,3);
     odomUKF.pose.pose.position.z = H_BAR(2,3);
-    Eigen::Matrix<double, 4, 1> q = VIOUtil::MatToQuat(VIOUtil::get_rotation(H_BAR));
+    Eigen::Matrix<float, 4, 1> q = VIOUtil::MatToQuat(VIOUtil::get_rotation(H_BAR));
     odomUKF.pose.pose.orientation.w = q(0,0);
     odomUKF.pose.pose.orientation.x = q(1,0);
     odomUKF.pose.pose.orientation.y = q(2,0);
