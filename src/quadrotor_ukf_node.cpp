@@ -66,8 +66,8 @@ void imu_callback(const sensor_msgs::Imu::ConstPtr& msg)
     odomUKF.pose.pose.orientation.x = q(1,0);
     odomUKF.pose.pose.orientation.y = q(2,0);
     odomUKF.pose.pose.orientation.z = q(3,0);
-    Eigen::Matrix<double, 3, 1> x_vel = x.block<3,1>(3,0) + VIOUtil::getSkew(VIOUtil::get_rotation(H_BAR)*H_BAR.block<3,1>(0,3))*VIOUtil::get_rotation(H_BAR)*u.block<3,1>(3,0);
-      cout<<"x_vel:"<<x_vel<<endl;
+    //Eigen::Matrix<double, 3, 1> x_vel = x.block<3,1>(3,0) + VIOUtil::getSkew(VIOUtil::get_rotation(H_BAR)*H_BAR.block<3,1>(0,3))*VIOUtil::get_rotation(H_BAR)*u.block<3,1>(3,0);
+    //cout<<"x_vel:"<<x_vel<<endl;
 
     odomUKF.twist.twist.linear.x = x(0,0);
     odomUKF.twist.twist.linear.y = x(1,0);
@@ -76,8 +76,8 @@ void imu_callback(const sensor_msgs::Imu::ConstPtr& msg)
     odomUKF.twist.twist.angular.y = u(4,0);
     odomUKF.twist.twist.angular.z = u(5,0);
     Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>  P = quadrotorUKF.GetStateCovariance();
-    P.block(0,0,3,3) = H_V_B.block(0, 0, 3, 3)*P.block(0,0,3,3)*H_V_B.block(0, 0, 3, 3).transpose();
-    P.block(3,3,3,3) = H_V_B.block(0, 0, 3, 3)*P.block(3,3,3,3)*H_V_B.block(0, 0, 3, 3).transpose();
+    //P.block(0,0,3,3) = H_V_B.block(0, 0, 3, 3)*P.block(0,0,3,3)*H_V_B.block(0, 0, 3, 3).transpose();
+    //P.block(3,3,3,3) = H_V_B.block(0, 0, 3, 3)*P.block(3,3,3,3)*H_V_B.block(0, 0, 3, 3).transpose();
   
     for (int j = 0; j < 6; j++)
       for (int i = 0; i < 6; i++)
