@@ -262,6 +262,8 @@ int main(int argc, char** argv)
   H_V_B_inv = H_V_B.inverse();
 
   cout<<"H_V_B:"<<H_V_B<<endl;
+    cout<<"H_V_B_inv:"<<H_V_B_inv<<endl;
+
   // Initialize UKF
   quadrotorUKF.SetUKFParameters(alpha, beta, kappa);
   quadrotorUKF.SetImuCovariance(Rv);
