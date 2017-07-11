@@ -54,9 +54,7 @@ void imu_callback(const sensor_msgs::Imu::ConstPtr& msg)
     Eigen::Matrix<double,4,4> H_V;
     H_V.setIdentity();
     H_V.block<3,3>(0,0) = VIOUtil::ypr_to_R(x.block(6,0,3,1));
-    H_V(0,3) = x(0,0);
-    H_V(1,3) = x(0,1);
-    H_V(2,3) = x(0,2);
+    H_V.block<3,1>(0,3) = x.block<3,1>(0,0);
     Eigen::Matrix<double, 4, 4> H_BAR;
     H_BAR = H_V_B*H_V*H_V_B_inv;
     odomUKF.pose.pose.position.x = H_BAR(0,3);
@@ -67,6 +65,7 @@ void imu_callback(const sensor_msgs::Imu::ConstPtr& msg)
     odomUKF.pose.pose.orientation.x = q(1,0);
     odomUKF.pose.pose.orientation.y = q(2,0);
     odomUKF.pose.pose.orientation.z = q(3,0);
+    Eigen::Matrix<double, 3, 1> x_vel = x.block<3,1>(3,0) + VIOUtil::getSkew(VIOUtil::get_rotation(H_BAR)*H_BAR.block<3,1>(0,3))*VIOUtil::get_rotation(H_BAR)*u.block<3,1>(3,0);
     odomUKF.twist.twist.linear.x = x(3,0);
     odomUKF.twist.twist.linear.y = x(4,0);
     odomUKF.twist.twist.linear.z = x(5,0);
