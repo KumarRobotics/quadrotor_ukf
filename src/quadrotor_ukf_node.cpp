@@ -57,7 +57,7 @@ void imu_callback(const sensor_msgs::Imu::ConstPtr& msg)
     H_V.block<3,3>(0,0) = VIOUtil::ypr_to_R(x.block(6,0,3,1));
     H_V.block<3,1>(0,3) = x.block<3,1>(0,0);
     Eigen::Matrix<double, 4, 4> H_BAR;
-    H_BAR = H_V_B*H_V*H_V_B_inv;
+    H_BAR = H_V;
     odomUKF.pose.pose.position.x = H_BAR(0,3);
     odomUKF.pose.pose.position.y = H_BAR(1,3);
     odomUKF.pose.pose.position.z = H_BAR(2,3);
