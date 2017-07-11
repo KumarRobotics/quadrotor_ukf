@@ -4,7 +4,8 @@
 #include <nav_msgs/Odometry.h>
 #include <quadrotor_ukf/quadrotor_ukf.h>
 #include <quadrotor_ukf/vio_utils.h>
-
+#include <iostream>
+using namespace std;
 // ROS
 static ros::Publisher pubUKF;
 //ros::Publisher pubBias;
@@ -66,6 +67,8 @@ void imu_callback(const sensor_msgs::Imu::ConstPtr& msg)
     odomUKF.pose.pose.orientation.y = q(2,0);
     odomUKF.pose.pose.orientation.z = q(3,0);
     Eigen::Matrix<double, 3, 1> x_vel = x.block<3,1>(3,0) + VIOUtil::getSkew(VIOUtil::get_rotation(H_BAR)*H_BAR.block<3,1>(0,3))*VIOUtil::get_rotation(H_BAR)*u.block<3,1>(3,0);
+      cout<<"x_vel:"<<x_vel<<endl;
+
     odomUKF.twist.twist.linear.x = x_vel(0,0);
     odomUKF.twist.twist.linear.y = x_vel(1,0);
     odomUKF.twist.twist.linear.z = x_vel(2,0);
@@ -258,6 +261,7 @@ int main(int argc, char** argv)
   H_V_B.block<3,3>(0,0) = VIOUtil::ypr_to_R(ypr);
   H_V_B_inv = H_V_B.inverse();
 
+  cout<<"H_V_B:"<<H_V_B<<endl;
   // Initialize UKF
   quadrotorUKF.SetUKFParameters(alpha, beta, kappa);
   quadrotorUKF.SetImuCovariance(Rv);
