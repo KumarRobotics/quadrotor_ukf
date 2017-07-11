@@ -14,6 +14,9 @@ static std::string frame_id;
 //arma::mat H_C_B = arma::eye<mat>(4,4);//Never use reshape
 Eigen::Matrix<double, 4, 4> H_C_B;
 
+Eigen::Matrix<double, 4, 4> H_V_B;
+Eigen::Matrix<double, 4, 4> H_V_B_inv;
+
 void imu_callback(const sensor_msgs::Imu::ConstPtr& msg)
 {
   // Assemble control input, and calibration
@@ -47,10 +50,19 @@ void imu_callback(const sensor_msgs::Imu::ConstPtr& msg)
     odomUKF.header.stamp = quadrotorUKF.GetStateTime();
     odomUKF.header.frame_id = frame_id;
     Eigen::Matrix<double, Eigen::Dynamic, 1> x = quadrotorUKF.GetState();
-    odomUKF.pose.pose.position.x = x(0,0);
-    odomUKF.pose.pose.position.y = x(1,0);
-    odomUKF.pose.pose.position.z = x(2,0);
-    Eigen::Matrix<double, 4, 1> q = VIOUtil::MatToQuat(VIOUtil::ypr_to_R(x.block(6,0,3,1)));
+    //rotate the odometry before publishing
+    Eigen::Matrix<double,4,4> H_V;
+    H_V.setIdentity();
+    H_V.block<3,3>(0,0) = VIOUtil::ypr_to_R(x.block(6,0,3,1));
+    H_V(0,3) = x(0,0);
+    H_V(1,3) = x(0,1);
+    H_V(2,3) = x(0,2);
+    Eigen::Matrix<double, 4, 4> H_BAR;
+    H_BAR = H_V_B*H_V*H_V_B_inv;
+    odomUKF.pose.pose.position.x = H_BAR(0,3);
+    odomUKF.pose.pose.position.y = H_BAR(1,3);
+    odomUKF.pose.pose.position.z = H_BAR(2,3);
+    Eigen::Matrix<double, 4, 1> q = VIOUtil::MatToQuat(VIOUtil::get_rotation(H_BAR));
     odomUKF.pose.pose.orientation.w = q(0,0);
     odomUKF.pose.pose.orientation.x = q(1,0);
     odomUKF.pose.pose.orientation.y = q(2,0);
@@ -62,6 +74,9 @@ void imu_callback(const sensor_msgs::Imu::ConstPtr& msg)
     odomUKF.twist.twist.angular.y = u(4,0);
     odomUKF.twist.twist.angular.z = u(5,0);
     Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>  P = quadrotorUKF.GetStateCovariance();
+    P.block(0,0,3,3) = H_V_B.block(0, 0, 3, 3)*P.block(0,0,3,3)*H_V_B.block(0, 0, 3, 3).transpose();
+    P.block(3,3,3,3) = H_V_B.block(0, 0, 3, 3)*P.block(3,3,3,3)*H_V_B.block(0, 0, 3, 3).transpose();
+  
     for (int j = 0; j < 6; j++)
       for (int i = 0; i < 6; i++)
         odomUKF.pose.covariance[i+j*6] = P((i<3)?i:i+3 , (j<3)?j:j+3);
@@ -211,6 +226,38 @@ int main(int argc, char** argv)
   Rv(6,6)   = stdAccBias[0] * stdAccBias[0];
   Rv(7,7)   = stdAccBias[1] * stdAccBias[1];
   Rv(8,8)   = stdAccBias[2] * stdAccBias[2];
+
+  int vehicle_id;
+  n.param("vehicle_id", vehicle_id, 0);
+
+  Eigen::Matrix<double,4,4> qs;
+  n.param("distribution/posx/x1", qs(0,0), 0.000601);
+  n.param("distribution/posx/x2", qs(0,1), 0.0);
+  n.param("distribution/posx/x3", qs(0,2), 0.0);
+  n.param("distribution/posx/x4", qs(0,3), 0.0);
+  n.param("distribution/posy/y1", qs(1,0), 0.000589);
+  n.param("distribution/posy/y2", qs(1,1), 0.0);
+  n.param("distribution/posy/y3", qs(1,2), 0.000589);
+  n.param("distribution/posy/y4", qs(1,3), 0.0);
+  n.param("distribution/posz/z1", qs(2,0), 0.000589);
+  n.param("distribution/posz/z2", qs(2,1), 0.0);
+  n.param("distribution/posz/z3", qs(2,2), 0.000589);
+  n.param("distribution/posz/z4", qs(2,3), 0.0);
+  n.param("distribution/pospsi/psi1", qs(3,0), 0.000589);
+  n.param("distribution/pospsi/psi2", qs(3,1), 0.0);
+  n.param("distribution/pospsi/psi3", qs(3,2), 0.000589);
+  n.param("distribution/pospsi/psi4", qs(3,3), 0.0);
+
+  //Based on the vehicle ID fill the position
+  H_V_B.setIdentity();
+  H_V_B(0,3) = qs(0, vehicle_id);
+  H_V_B(1,3) = qs(1, vehicle_id);
+  H_V_B(2,3) = qs(2, vehicle_id);
+  Eigen::Matrix<double, 3,1> ypr;
+  ypr.setZero();
+  ypr(0,0) = qs(3, vehicle_id);
+  H_V_B.block<3,3>(0,0) = VIOUtil::ypr_to_R(ypr);
+  H_V_B_inv = H_V_B.inverse();
 
   // Initialize UKF
   quadrotorUKF.SetUKFParameters(alpha, beta, kappa);
