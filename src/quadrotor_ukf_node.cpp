@@ -18,6 +18,17 @@ Eigen::Matrix<double, 4, 4> H_C_B;
 Eigen::Matrix<double, 4, 4> H_V_B;
 Eigen::Matrix<double, 4, 4> H_V_B_inv;
 
+ros::Time getRealTime()
+  {
+      struct timespec t;
+      clock_gettime( CLOCK_REALTIME, &t );
+      uint64_t timeNanoSecMonotonic = t.tv_sec * 1000000000ULL + t.tv_nsec;
+      //return (int64_t)timeNanoSecMonotonic;
+      ros::Time time_monoros;
+      time_monoros.fromSec((double)(timeNanoSecMonotonic/1000000000.0));
+      return time_monoros;
+  }
+
 void imu_callback(const sensor_msgs::Imu::ConstPtr& msg)
 {
   // Assemble control input, and calibration
@@ -48,7 +59,7 @@ void imu_callback(const sensor_msgs::Imu::ConstPtr& msg)
   {
     nav_msgs::Odometry odomUKF;
     // Publish odom
-    odomUKF.header.stamp = quadrotorUKF.GetStateTime();
+    odomUKF.header.stamp = getRealTime();//quadrotorUKF.GetStateTime();
     odomUKF.header.frame_id = frame_id;
     Eigen::Matrix<double, Eigen::Dynamic, 1> x = quadrotorUKF.GetState();
     //rotate the odometry before publishing
