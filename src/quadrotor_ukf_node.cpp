@@ -149,7 +149,8 @@ void slam_callback(const nav_msgs::Odometry::ConstPtr& msg)
   //mat H_R_R0 = zeros<mat>(4,4);
   Eigen::Matrix<double, 4, 4> H_R_R0;
   H_R_R0.setIdentity();
-  H_R_R0 = H_C_B*H_C_C0*H_C_B.inverse();
+  //H_R_R0 = H_C_B*H_C_C0*H_C_B.inverse();
+  H_R_R0 = H_C_C0;
   //Set the rotation
   Eigen::Matrix<double, 4, 1> q_R_R0 = VIOUtil::MatToQuat(H_R_R0.block(0, 0, 3, 3));
   // Assemble measurement
@@ -167,13 +168,13 @@ void slam_callback(const nav_msgs::Odometry::ConstPtr& msg)
   RnSLAM_new.setZero();// = zeros<mat>(6,6);
   //RnSLAM_new.submat(0,0,2,2) = H_C_B.submat(0, 0, 2, 2)*RnSLAM.submat(0,0,2,2)*H_C_B.submat(0, 0, 2, 2).t();
   //RnSLAM_new.submat(3,3,5,5) = H_C_B.submat(0, 0, 2, 2)*RnSLAM.submat(3,3,5,5)*H_C_B.submat(0, 0, 2, 2).t();
-  RnSLAM_new.block(0,0,3,3) = H_C_B.block(0, 0, 3, 3)*RnSLAM.block(0,0,3,3)*H_C_B.block(0, 0, 3, 3).transpose();
-  RnSLAM_new.block(3,3,3,3) = H_C_B.block(0, 0, 3, 3)*RnSLAM.block(3,3,3,3)*H_C_B.block(0, 0, 3, 3).transpose();
+  //RnSLAM_new.block(0,0,3,3) = H_C_B.block(0, 0, 3, 3)*RnSLAM.block(0,0,3,3)*H_C_B.block(0, 0, 3, 3).transpose();
+  //RnSLAM_new.block(3,3,3,3) = H_C_B.block(0, 0, 3, 3)*RnSLAM.block(3,3,3,3)*H_C_B.block(0, 0, 3, 3).transpose();
   
   // Measurement update
   if (quadrotorUKF.isInitialized())
   {
-    quadrotorUKF.MeasurementUpdateSLAM(z_new, RnSLAM_new, msg->header.stamp);
+    quadrotorUKF.MeasurementUpdateSLAM(z_new, RnSLAM, msg->header.stamp);
   }
   else
   {
