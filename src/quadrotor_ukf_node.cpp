@@ -68,7 +68,7 @@ void imu_callback(const sensor_msgs::Imu::ConstPtr& msg)
     H_V.block<3,3>(0,0) = VIOUtil::ypr_to_R(x.block(6,0,3,1));
     H_V.block<3,1>(0,3) = x.block<3,1>(0,0);
     Eigen::Matrix<double, 4, 4> H_BAR;
-    H_BAR = H_V_B*H_V*H_V_B_inv;
+    H_BAR = H_V;//H_V_B*H_V*H_V_B_inv;
     odomUKF.pose.pose.position.x = H_BAR(0,3);
     odomUKF.pose.pose.position.y = H_BAR(1,3);
     odomUKF.pose.pose.position.z = H_BAR(2,3);
@@ -77,7 +77,7 @@ void imu_callback(const sensor_msgs::Imu::ConstPtr& msg)
     odomUKF.pose.pose.orientation.x = q(1,0);
     odomUKF.pose.pose.orientation.y = q(2,0);
     odomUKF.pose.pose.orientation.z = q(3,0);
-    Eigen::Matrix<double, 3, 1> x_vel = x.block<3,1>(3,0) + VIOUtil::getSkew(VIOUtil::get_rotation(H_V)*u.block<3,1>(3,0))*VIOUtil::get_rotation(H_V)*H_V_B_inv.block<3,1>(0,3);
+    Eigen::Matrix<double, 3, 1> x_vel = x.block<3,1>(3,0);// + VIOUtil::getSkew(VIOUtil::get_rotation(H_V)*u.block<3,1>(3,0))*VIOUtil::get_rotation(H_V)*H_V_B_inv.block<3,1>(0,3);
     odomUKF.twist.twist.linear.x = x_vel(0,0);
     odomUKF.twist.twist.linear.y = x_vel(1,0);
     odomUKF.twist.twist.linear.z = x_vel(2,0);
@@ -85,8 +85,8 @@ void imu_callback(const sensor_msgs::Imu::ConstPtr& msg)
     odomUKF.twist.twist.angular.y = u(4,0);
     odomUKF.twist.twist.angular.z = u(5,0);
     Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>  P = quadrotorUKF.GetStateCovariance();
-    P.block(0,0,3,3) = H_V_B.block(0, 0, 3, 3)*P.block(0,0,3,3)*H_V_B.block(0, 0, 3, 3).transpose();
-    P.block(3,3,3,3) = H_V_B.block(0, 0, 3, 3)*P.block(3,3,3,3)*H_V_B.block(0, 0, 3, 3).transpose();
+    //P.block(0,0,3,3) = H_V_B.block(0, 0, 3, 3)*P.block(0,0,3,3)*H_V_B.block(0, 0, 3, 3).transpose();
+    //P.block(3,3,3,3) = H_V_B.block(0, 0, 3, 3)*P.block(3,3,3,3)*H_V_B.block(0, 0, 3, 3).transpose();
   
     for (int j = 0; j < 6; j++)
       for (int i = 0; i < 6; i++)
@@ -261,7 +261,7 @@ int main(int argc, char** argv)
   n.param("distribution/pospsi/psi4", qs(3,3), 0.0);
 
   //Based on the vehicle ID fill the position
-  H_V_B.setIdentity();
+  /*H_V_B.setIdentity();
   H_V_B(0,3) = qs(0, vehicle_id);
   H_V_B(1,3) = qs(1, vehicle_id);
   H_V_B(2,3) = qs(2, vehicle_id);
@@ -272,7 +272,7 @@ int main(int argc, char** argv)
   H_V_B_inv = H_V_B.inverse();
 
   cout<<"H_V_B:"<<H_V_B<<endl;
-  cout<<"H_V_B_inv:"<<H_V_B_inv<<endl;
+  cout<<"H_V_B_inv:"<<H_V_B_inv<<endl;*/
 
   // Initialize UKF
   quadrotorUKF.SetUKFParameters(alpha, beta, kappa);
