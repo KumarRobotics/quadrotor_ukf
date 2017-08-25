@@ -138,7 +138,7 @@ void slam_callback(const nav_msgs::Odometry::ConstPtr& msg)
 
   //rotate the measurement for control purpose
   //arma::mat H_C_C0 = arma::eye<mat>(4,4);
-  Eigen::Matrix<double, 4, 4> H_C_C0;
+  /*Eigen::Matrix<double, 4, 4> H_C_C0;
   H_C_C0.setIdentity();
   H_C_C0.block(0, 0, 3, 3) = VIOUtil::QuatToMat(q);
   H_C_C0(0,3) = z(0,0);
@@ -162,7 +162,7 @@ void slam_callback(const nav_msgs::Odometry::ConstPtr& msg)
   Eigen::Matrix<double, 3, 1> ypr_new = VIOUtil::R_to_ypr(VIOUtil::QuatToMat(q_R_R0));//R_to_ypr(H_R_R0.submat(0, 0, 2, 2));
   z_new(3,0) = ypr_new(0,0);
   z_new(4,0) = ypr_new(1,0);
-  z_new(5,0) = ypr_new(2,0);
+  z_new(5,0) = ypr_new(2,0);*/
   //rotate the covariance
   //Eigen::Matrix<double, 6, 6>  RnSLAM_new;
   //RnSLAM_new.setZero();// = zeros<mat>(6,6);
