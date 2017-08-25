@@ -4,6 +4,7 @@
 #include <nav_msgs/Odometry.h>
 #include <quadrotor_ukf/quadrotor_ukf.h>
 #include <quadrotor_ukf/vio_utils.h>
+using namespace std;
 
 // ROS
 static ros::Publisher pubUKF;
@@ -97,18 +98,20 @@ void slam_callback(const nav_msgs::Odometry::ConstPtr& msg)
   z(3,0) = ypr(0,0);
   z(4,0) = ypr(1,0);
   z(5,0) = ypr(2,0);
+//cout<<"2"<<endl;
   // Assemble measurement covariance
   Eigen::Matrix<double, 6, 6> RnSLAM;
   RnSLAM.setZero();// = zeros<mat>(6,6);
   //for (int j = 0; j < 3; j++)
     //for (int i = 0; i < 3; i++)
       //RnSLAM(i,j) = msg->pose.covariance[i+j*6];
-  RnSLAM(0,0) = msg->pose.covariance[0];
-  RnSLAM(1,1) = msg->pose.covariance[1+1*6];
-  RnSLAM(2,2) = msg->pose.covariance[2+2*6];
-  RnSLAM(3,3) = msg->pose.covariance[3+3*6];
-  RnSLAM(4,4) = msg->pose.covariance[4+4*6];
-  RnSLAM(5,5) = msg->pose.covariance[5+5*6];
+  RnSLAM(0,0) = 0.00000001;//msg->pose.covariance[0];
+  RnSLAM(1,1) = 0.00000001;//msg->pose.covariance[1+1*6];
+  RnSLAM(2,2) = 0.00000001;//msg->pose.covariance[2+2*6];
+  RnSLAM(3,3) = 0.00000001;//msg->pose.covariance[3+3*6];
+  RnSLAM(4,4) = 0.00000001;//msg->pose.covariance[4+4*6];
+  RnSLAM(5,5) = 0.00000001;//msg->pose.covariance[5+5*6];
+//cout<<"pose:"<<z.transpose()<<endl;
 
   //rotate the measurement for control purpose
   //arma::mat H_C_C0 = arma::eye<mat>(4,4);
@@ -123,7 +126,7 @@ void slam_callback(const nav_msgs::Odometry::ConstPtr& msg)
   //mat H_R_R0 = zeros<mat>(4,4);
   Eigen::Matrix<double, 4, 4> H_R_R0;
   H_R_R0.setIdentity();
-  H_R_R0 = H_C_B*H_C_C0*H_C_B.inverse();
+  H_R_R0 = H_C_C0; // H_C_B*H_C_C0*H_C_B.inverse();
   //Set the rotation
   Eigen::Matrix<double, 4, 1> q_R_R0 = VIOUtil::MatToQuat(H_R_R0.block(0, 0, 3, 3));
   // Assemble measurement
@@ -141,18 +144,21 @@ void slam_callback(const nav_msgs::Odometry::ConstPtr& msg)
   RnSLAM_new.setZero();// = zeros<mat>(6,6);
   //RnSLAM_new.submat(0,0,2,2) = H_C_B.submat(0, 0, 2, 2)*RnSLAM.submat(0,0,2,2)*H_C_B.submat(0, 0, 2, 2).t();
   //RnSLAM_new.submat(3,3,5,5) = H_C_B.submat(0, 0, 2, 2)*RnSLAM.submat(3,3,5,5)*H_C_B.submat(0, 0, 2, 2).t();
-  RnSLAM_new.block(0,0,3,3) = H_C_B.block(0, 0, 3, 3)*RnSLAM.block(0,0,3,3)*H_C_B.block(0, 0, 3, 3).transpose();
-  RnSLAM_new.block(3,3,3,3) = H_C_B.block(0, 0, 3, 3)*RnSLAM.block(3,3,3,3)*H_C_B.block(0, 0, 3, 3).transpose();
+ // RnSLAM_new.block(0,0,3,3) = H_C_B.block(0, 0, 3, 3)*RnSLAM.block(0,0,3,3)*H_C_B.block(0, 0, 3, 3).transpose();
+  //RnSLAM_new.block(3,3,3,3) = H_C_B.block(0, 0, 3, 3)*RnSLAM.block(3,3,3,3)*H_C_B.block(0, 0, 3, 3).transpose();
+//cout<<"3"<<endl;
   
   // Measurement update
   if (quadrotorUKF.isInitialized())
   {
-    quadrotorUKF.MeasurementUpdateSLAM(z_new, RnSLAM_new, msg->header.stamp);
+    quadrotorUKF.MeasurementUpdateSLAM(z_new, RnSLAM, msg->header.stamp);
   }
   else
   {
     quadrotorUKF.SetInitPose(z, msg->header.stamp);
   }
+//cout<<"4"<<endl;
+
 }
 
 int main(int argc, char** argv)
@@ -162,17 +168,17 @@ int main(int argc, char** argv)
   
   
   H_C_B (0,0) = 1;
-  H_C_B (0,1) = 0;
+  H_C_B (0,1) = 0.0;
   H_C_B (0,2) = 0;
-  H_C_B (0,3) = 0;
+  H_C_B (0,3) = 0.01;
   H_C_B (1,0) = 0;
-  H_C_B (1,1) = -1;
-  H_C_B (1,2) = 0;
-  H_C_B (1,3) = 0;
+  H_C_B (1,1) = 1;
+  H_C_B (1,2) = 0.0;
+  H_C_B (1,3) = 0.04;
   H_C_B (2,0) = 0;
   H_C_B (2,1) = 0;
-  H_C_B (2,2) = -1;
-  H_C_B (2,3) = 0.0;
+  H_C_B (2,2) = 1;
+  H_C_B (2,3) = 0;
   H_C_B (3,0) = 0;
   H_C_B (3,1) = 0;
   H_C_B (3,2) = 0;
