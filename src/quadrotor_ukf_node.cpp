@@ -126,15 +126,15 @@ void slam_callback(const nav_msgs::Odometry::ConstPtr& msg)
   // Assemble measurement covariance
   Eigen::Matrix<double, 6, 6> RnSLAM;
   RnSLAM.setZero();// = zeros<mat>(6,6);
-  //for (int j = 0; j < 3; j++)
-    //for (int i = 0; i < 3; i++)
-      //RnSLAM(i,j) = msg->pose.covariance[i+j*6];
-  RnSLAM(0,0) = msg->pose.covariance[0];
+  for (int j = 0; j < 6; j++)
+    for (int i = 0; i < 6; i++)
+      RnSLAM(i,j) = msg->pose.covariance[i+j*6];
+  /*RnSLAM(0,0) = msg->pose.covariance[0];
   RnSLAM(1,1) = msg->pose.covariance[1+1*6];
   RnSLAM(2,2) = msg->pose.covariance[2+2*6];
   RnSLAM(3,3) = msg->pose.covariance[3+3*6];
   RnSLAM(4,4) = msg->pose.covariance[4+4*6];
-  RnSLAM(5,5) = msg->pose.covariance[5+5*6];
+  RnSLAM(5,5) = msg->pose.covariance[5+5*6];*/
 
   //rotate the measurement for control purpose
   //arma::mat H_C_C0 = arma::eye<mat>(4,4);
