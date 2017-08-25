@@ -164,8 +164,8 @@ void slam_callback(const nav_msgs::Odometry::ConstPtr& msg)
   z_new(4,0) = ypr_new(1,0);
   z_new(5,0) = ypr_new(2,0);
   //rotate the covariance
-  Eigen::Matrix<double, 6, 6>  RnSLAM_new;
-  RnSLAM_new.setZero();// = zeros<mat>(6,6);
+  //Eigen::Matrix<double, 6, 6>  RnSLAM_new;
+  //RnSLAM_new.setZero();// = zeros<mat>(6,6);
   //RnSLAM_new.submat(0,0,2,2) = H_C_B.submat(0, 0, 2, 2)*RnSLAM.submat(0,0,2,2)*H_C_B.submat(0, 0, 2, 2).t();
   //RnSLAM_new.submat(3,3,5,5) = H_C_B.submat(0, 0, 2, 2)*RnSLAM.submat(3,3,5,5)*H_C_B.submat(0, 0, 2, 2).t();
   //RnSLAM_new.block(0,0,3,3) = H_C_B.block(0, 0, 3, 3)*RnSLAM.block(0,0,3,3)*H_C_B.block(0, 0, 3, 3).transpose();
