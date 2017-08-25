@@ -105,12 +105,12 @@ void slam_callback(const nav_msgs::Odometry::ConstPtr& msg)
   //for (int j = 0; j < 3; j++)
     //for (int i = 0; i < 3; i++)
       //RnSLAM(i,j) = msg->pose.covariance[i+j*6];
-  RnSLAM(0,0) = 0.00000001;//msg->pose.covariance[0];
-  RnSLAM(1,1) = 0.00000001;//msg->pose.covariance[1+1*6];
-  RnSLAM(2,2) = 0.00000001;//msg->pose.covariance[2+2*6];
-  RnSLAM(3,3) = 0.00000001;//msg->pose.covariance[3+3*6];
-  RnSLAM(4,4) = 0.00000001;//msg->pose.covariance[4+4*6];
-  RnSLAM(5,5) = 0.00000001;//msg->pose.covariance[5+5*6];
+  RnSLAM(0,0) = 0.000001;//msg->pose.covariance[0];
+  RnSLAM(1,1) = 0.000001;//msg->pose.covariance[1+1*6];
+  RnSLAM(2,2) = 0.000001;//msg->pose.covariance[2+2*6];
+  RnSLAM(3,3) = 0.000001;//msg->pose.covariance[3+3*6];
+  RnSLAM(4,4) = 0.000001;//msg->pose.covariance[4+4*6];
+  RnSLAM(5,5) = 0.000001;//msg->pose.covariance[5+5*6];
 //cout<<"pose:"<<z.transpose()<<endl;
 
   //rotate the measurement for control purpose
