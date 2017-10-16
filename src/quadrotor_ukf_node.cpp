@@ -4,6 +4,18 @@
 #include <nav_msgs/Odometry.h>
 #include <quadrotor_ukf/quadrotor_ukf.h>
 #include <quadrotor_ukf/vio_utils.h>
+
+namespace {
+  ros::Time getMonotonicTime()
+  {
+    struct timespec t;
+    clock_gettime( CLOCK_MONOTONIC, &t );
+    return ros::Time(t.tv_sec, t.tv_nsec);
+  }
+
+}
+
+
 using namespace std;
 
 // ROS
@@ -83,6 +95,8 @@ void imu_callback(const sensor_msgs::Imu::ConstPtr& msg)
 
 void slam_callback(const nav_msgs::Odometry::ConstPtr& msg)
 {
+
+  //std::cout<<"UKF: Total time between receiving msg and msg stamp: "<<getMonotonicTime().toSec()-msg->header.stamp.toSec()<<std::endl;
   // Get orientation
   Eigen::Matrix<double, 4, 1> q;
   q(0,0) = msg->pose.pose.orientation.w;
@@ -108,9 +122,9 @@ void slam_callback(const nav_msgs::Odometry::ConstPtr& msg)
   RnSLAM(0,0) = 0.000001;//msg->pose.covariance[0];
   RnSLAM(1,1) = 0.000001;//msg->pose.covariance[1+1*6];
   RnSLAM(2,2) = 0.000001;//msg->pose.covariance[2+2*6];
-  RnSLAM(3,3) = 0.000001;//msg->pose.covariance[3+3*6];
-  RnSLAM(4,4) = 0.000001;//msg->pose.covariance[4+4*6];
-  RnSLAM(5,5) = 0.000001;//msg->pose.covariance[5+5*6];
+  RnSLAM(3,3) = 0.0001;//msg->pose.covariance[3+3*6];
+  RnSLAM(4,4) = 0.0001;//msg->pose.covariance[4+4*6];
+  RnSLAM(5,5) = 0.0001;//msg->pose.covariance[5+5*6];
 //cout<<"pose:"<<z.transpose()<<endl;
 
   //rotate the measurement for control purpose
@@ -195,9 +209,9 @@ int main(int argc, char** argv)
   n.param("alpha", alpha, 0.4);
   n.param("beta" , beta , 2.0);
   n.param("kappa", kappa, 0.0);
-  n.param("noise_std/process/acc/x", stdAcc[0], 0.2);
-  n.param("noise_std/process/acc/y", stdAcc[1], 0.2);
-  n.param("noise_std/process/acc/z", stdAcc[2], 0.2);
+  n.param("noise_std/process/acc/x", stdAcc[0], 0.3);
+  n.param("noise_std/process/acc/y", stdAcc[1], 0.3);
+  n.param("noise_std/process/acc/z", stdAcc[2], 0.3);
   n.param("noise_std/process/w/x", stdW[0], 0.1);
   n.param("noise_std/process/w/y", stdW[1], 0.1);
   n.param("noise_std/process/w/z", stdW[2], 0.1);

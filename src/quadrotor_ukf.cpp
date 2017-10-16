@@ -234,95 +234,95 @@ Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> QuadrotorUKF::MeasurementM
 void QuadrotorUKF::PropagateAprioriCovariance(const ros::Time time,
                                               std::list<Eigen::Matrix<double, Eigen::Dynamic, 1> >::iterator& kx, std::list<Eigen::Matrix<double, Eigen::Dynamic, 1> >::iterator& ku, std::list<ros::Time>::iterator& kt)
 {
-  // Find aligned state, Time
-  double mdt = NUM_INF;
-  std::list<Eigen::Matrix<double, Eigen::Dynamic, 1> >::iterator k1 = xHist.begin();
-  std::list<Eigen::Matrix<double, Eigen::Dynamic, 1> >::iterator k2 = uHist.begin();
-  std::list<ros::Time>::iterator k3 = xTimeHist.begin();
-  int                       k4 = 0;
-  for (; k1 != xHist.end(); k1++, k2++, k3++, k4++)
-  {
-    double dt = fabs((*k3 - time).toSec());
-    if (dt < mdt)
-    {
-      mdt = dt;
-      kx  = k1;
-      ku  = k2;
-      kt  = k3;
-    }
-    else
-    {
-      break;
-    }
-  }
-  Eigen::Matrix<double, Eigen::Dynamic, 1> cx = *kx;
-  ros::Time ct = *kt;
-  Eigen::Matrix<double, Eigen::Dynamic, 1> px = xHist.back();
-  ros::Time pt = xTimeHist.back();
-  double dt = (ct - pt).toSec();
-  if (fabs(dt) < 0.001)
-  {
-    kx = xHist.begin();
-    ku = uHist.begin();
-    kt = xTimeHist.begin();
-    return;
-  }
-  // Delete redundant states
-  xHist.erase(k1, xHist.end());
-  uHist.erase(k2, uHist.end());
-  xTimeHist.erase(k3, xTimeHist.end());
-  // rot, gravity
-  Eigen::Matrix<double, 3, 3> pR = VIOUtil::ypr_to_R(px.block<3,1>(6,0));//px.rows(6,8)
-  Eigen::Matrix<double, 3, 1> ag;
-  ag(0,0) = 0;
-  ag(1,0) = 0;
-  ag(2,0) = g;
-  // Linear Acceleration
-  Eigen::Matrix<double, 3, 1> dv = cx.block<3,1>(3,0) - px.block<3,1>(3,0);//rows(3,5);
-  Eigen::Matrix<double, 3, 1> a = pR.transpose() * (dv / dt + ag) + px.block<3,1>(9,0);//.rows(9,11);
-  // Angular Velocity
-  Eigen::Matrix<double, 3, 3> dR = pR.transpose() * VIOUtil::ypr_to_R(cx.block<3,1>(6,0));//cx.rows(6,8)
-  Eigen::Matrix<double, 3, 1> w = VIOUtil::LogSO3(dR)/dt;
-  //w(0,0) = dR(2,1) / dt;
-  //w(1,0) = dR(0,2) / dt;
-  //w(2,0) = dR(1,0) / dt;
-  // Assemble state and control
-  Eigen::Matrix<double, 6, 1> u;
-  u.block<3,1>(0,0) = a;
-  u.block<3,1>(3,0) = w;
-  // Generate sigma points
-  GenerateSigmaPoints();
-  // Mean
-  for (int k = 0; k < 2*L+1; k++){
-    Xa.col(k) = ProcessModel(Xa.col(k), u, Va.col(k), dt);
-  }
+	// Find aligned state, Time
+	double mdt = NUM_INF;
+	std::list<Eigen::Matrix<double, Eigen::Dynamic, 1> >::iterator k1 = xHist.begin();
+	std::list<Eigen::Matrix<double, Eigen::Dynamic, 1> >::iterator k2 = uHist.begin();
+	std::list<ros::Time>::iterator k3 = xTimeHist.begin();
+	int k4 = 0;
+	for (; k1 != xHist.end(); k1++, k2++, k3++, k4++)
+	{
+		double dt = fabs((*k3 - time).toSec());
+		if (dt < mdt)
+		{
+			mdt = dt;
+			kx  = k1;
+			ku  = k2;
+			kt  = k3;
+		}
+		else
+		{
+			break;
+		}
+	}
+	Eigen::Matrix<double, Eigen::Dynamic, 1> cx = *kx;
+	ros::Time ct = *kt;
+	Eigen::Matrix<double, Eigen::Dynamic, 1> px = xHist.back();
+	ros::Time pt = xTimeHist.back();
+	double dt = (ct - pt).toSec();
+	if (fabs(dt) < 0.001)
+	{
+		kx = xHist.begin();
+		ku = uHist.begin();
+		kt = xTimeHist.begin();
+		return;
+	}
+	// Delete redundant states
+	xHist.erase(k1, xHist.end());
+	uHist.erase(k2, uHist.end());
+	xTimeHist.erase(k3, xTimeHist.end());
+	// rot, gravity
+	Eigen::Matrix<double, 3, 3> pR = VIOUtil::ypr_to_R(px.block<3,1>(6,0));//px.rows(6,8)
+	Eigen::Matrix<double, 3, 1> ag;
+	ag(0,0) = 0;
+	ag(1,0) = 0;
+	ag(2,0) = g;
+	// Linear Acceleration
+	Eigen::Matrix<double, 3, 1> dv = cx.block<3,1>(3,0) - px.block<3,1>(3,0);//rows(3,5);
+	Eigen::Matrix<double, 3, 1> a = pR.transpose() * (dv / dt + ag) + px.block<3,1>(9,0);//.rows(9,11);
+	// Angular Velocity
+	Eigen::Matrix<double, 3, 3> dR = pR.transpose() * VIOUtil::ypr_to_R(cx.block<3,1>(6,0));//cx.rows(6,8)
+	Eigen::Matrix<double, 3, 1> w = VIOUtil::LogSO3(dR)/dt;
+	//w(0,0) = dR(2,1) / dt;
+	//w(1,0) = dR(0,2) / dt;
+	//w(2,0) = dR(1,0) / dt;
+	// Assemble state and control
+	Eigen::Matrix<double, 6, 1> u;
+	u.block<3,1>(0,0) = a;
+	u.block<3,1>(3,0) = w;
+	// Generate sigma points
+	GenerateSigmaPoints();
+	// Mean
+	for (int k = 0; k < 2*L+1; k++){
+		Xa.col(k) = ProcessModel(Xa.col(k), u, Va.col(k), dt);
+	}
 
-  // Handle jump between +pi and -pi !
-  Eigen::MatrixXd::Index maxRow, maxCol;
-  double minYaw = Xa.row(6).minCoeff();// = min(Xa.row(6), 1);
-  double maxYaw = Xa.row(6).maxCoeff();// = max(Xa.row(6), 1);
-  if (fabs(minYaw - maxYaw) > PI)
-  {
-    for (int k = 0; k < 2*L+1; k++)
-      if (Xa(6,k) < 0)
-        Xa(6,k) += 2*PI;
-  }
-  // Now we can get the mean...
-  Eigen::Matrix<double, Eigen::Dynamic, 1> xa;
-  xa.setZero(Xa.rows(),1);
-  for (int i = 0; i < 2 * L + 1; i++){
-   xa += wm(0,i) * Xa.col(i);// = sum( repmat(wm,stateCnt,1) % Xa, 1 );
-}
+	// Handle jump between +pi and -pi !
+	Eigen::MatrixXd::Index maxRow, maxCol;
+	double minYaw = Xa.row(6).minCoeff();// = min(Xa.row(6), 1);
+	double maxYaw = Xa.row(6).maxCoeff();// = max(Xa.row(6), 1);
+	if (fabs(minYaw - maxYaw) > PI)
+	{
+		for (int k = 0; k < 2*L+1; k++)
+			if (Xa(6,k) < 0)
+				Xa(6,k) += 2*PI;
+	}
+	// Now we can get the mean...
+	Eigen::Matrix<double, Eigen::Dynamic, 1> xa;
+	xa.setZero(Xa.rows(),1);
+	for (int i = 0; i < 2 * L + 1; i++){
+		xa += wm(0,i) * Xa.col(i);// = sum( repmat(wm,stateCnt,1) % Xa, 1 );
+	}
 
-  // Covariance
-  P.setZero(Xa.rows(), Xa.rows());//.zeros();
-  for (int k = 0; k < 2*L+1; k++)
-  {
-    Eigen::Matrix<double, Eigen::Dynamic, 1> d = Xa.col(k) - xa;
-    P += wc(0,k) * d * d.transpose();
-  }
+	// Covariance
+	P.setZero(Xa.rows(), Xa.rows());//.zeros();
+	for (int k = 0; k < 2*L+1; k++)
+	{
+		Eigen::Matrix<double, Eigen::Dynamic, 1> d = Xa.col(k) - xa;
+		P += wc(0,k) * d * d.transpose();
+	}
 
-  return;
+	return;
 }
 
 void QuadrotorUKF::PropagateAposterioriState(std::list<Eigen::Matrix<double, Eigen::Dynamic, 1> >::iterator kx, std::list<Eigen::Matrix<double, Eigen::Dynamic, 1> >::iterator ku, std::list<ros::Time>::iterator kt)
