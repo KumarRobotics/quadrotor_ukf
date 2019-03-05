@@ -17,12 +17,12 @@ ELSE()
   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 ENDIF()
 
-find_package(catkin REQUIRED COMPONENTS roscpp sensor_msgs cmake_modules)
+find_package(catkin REQUIRED COMPONENTS roscpp sensor_msgs cmake_modules tf2 tf2_ros)
 find_package(Eigen REQUIRED)
 
 include_directories(include ${catkin_INCLUDE_DIRS} ${EIGEN_INCLUDE_DIR})
 
-catkin_package(CATKIN_DEPENDS roscpp sensor_msgs )
+catkin_package(CATKIN_DEPENDS roscpp sensor_msgs tf2 tf2_ros)
 
 set(UKF_SOURCE_FILES     
 		src/quadrotor_ukf.cpp
