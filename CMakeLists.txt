@@ -18,39 +18,34 @@ ELSE()
 ENDIF()
 
 find_package(catkin REQUIRED COMPONENTS roscpp sensor_msgs cmake_modules)
-find_package(Eigen REQUIRED)
+find_package(Eigen3 REQUIRED)
 
-include_directories(include ${catkin_INCLUDE_DIRS} ${EIGEN_INCLUDE_DIR})
+include_directories(include ${catkin_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIR})
 
 catkin_package(CATKIN_DEPENDS roscpp sensor_msgs )
 
-set(UKF_SOURCE_FILES     
+set(UKF_SOURCE_FILES
 		src/quadrotor_ukf.cpp
 		src/vio_utils.cpp
-
 )
 
-
-set(UKF_HEADER_FILES  
+set(UKF_HEADER_FILES
 		include/quadrotor_ukf/quadrotor_ukf.h
-		include/quadrotor_ukf/vio_utils.h 
-
+		include/quadrotor_ukf/vio_utils.h
 )
-
 
 ###########
 ## Build ##
 ###########
 add_library(ukf_filter_lib ${UKF_SOURCE_FILES})
 target_link_libraries(ukf_filter_lib ${catkin_LIBRARIES} ${EIGEN_LIBS})
+
 add_executable(quadrotor_ukf  src/quadrotor_ukf_node.cpp)
 add_dependencies(quadrotor_ukf ${catkin_EXPORTED_TARGETS} )
 target_link_libraries(quadrotor_ukf ukf_filter_lib ${catkin_LIBRARIES} ${EIGEN_LIBS})
-
 
 install(TARGETS ukf_filter_lib quadrotor_ukf
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
-
