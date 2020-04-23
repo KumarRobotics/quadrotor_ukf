@@ -22,9 +22,9 @@ QuadrotorUKF::QuadrotorUKF()
   P_(3,3) = 0.1*0.1;
   P_(4,4) = 0.1*0.1;
   P_(5,5) = 0.1*0.1;
-  P_(6,6) = 10*PI/180*10*PI/180;
-  P_(7,7) = 10*PI/180*10*PI/180;
-  P_(8,8) = 10*PI/180*10*PI/180;
+  P_(6,6) = 10*M_PI/180*10*M_PI/180;
+  P_(7,7) = 10*M_PI/180*10*M_PI/180;
+  P_(8,8) = 10*M_PI/180*10*M_PI/180;
   P_(9,9)   =  0.01*0.01;
   P_(10,10) =  0.01*0.01;
   P_(11,11) =  0.01*0.01;
@@ -52,7 +52,12 @@ ros::Time QuadrotorUKF::GetStateTime()       { return xTimeHist_.front(); }
 
 Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>       QuadrotorUKF::GetStateCovariance() { return P_; }
 
-void QuadrotorUKF::SetGravity(double _g) { g_ = _g; initGravity_ = true; }
+void QuadrotorUKF::SetGravity(double _g)
+{
+  g_ = _g;
+  initGravity_ = true;
+  std::cout << "Gravity Initialized " << g_ << std::endl;
+}
 
 void QuadrotorUKF::SetImuCovariance(const Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>& _Rv) { Rv_ = _Rv; }
 
@@ -77,7 +82,7 @@ void QuadrotorUKF::SetInitPose(Eigen::Matrix<double, Eigen::Dynamic, 1> p, ros::
   xTimeHist_.push_front(time);
   initMeasure_ = true;
 
-  std::cout << "Pose Initialized " << initMeasure_ << std::endl;
+  std::cout << "Pose Initialized " << p << std::endl;
 }
 
 bool QuadrotorUKF::ProcessUpdate(Eigen::Matrix<double, Eigen::Dynamic, 1> u, ros::Time time)
@@ -305,16 +310,16 @@ void QuadrotorUKF::PropagateAprioriCovariance(const ros::Time time,
     Xa_.col(k) = ProcessModel(Xa_.col(k), u, Va_.col(k), dt);
   }
 
-  // Handle jump between +pi and -pi !
+  // Handle jump between +M_PI and -M_PI !
   //Eigen::MatrixXd::Index maxRow, maxCol;
   double minYaw = Xa_.row(6).minCoeff();// = min(Xa.row(6), 1);
   double maxYaw = Xa_.row(6).maxCoeff();// = max(Xa.row(6), 1);
-  if (fabs(minYaw - maxYaw) > PI)
+  if (fabs(minYaw - maxYaw) > M_PI)
   {
     for (int k = 0; k < 2*L_+1; k++)
     {
       if (Xa_(6,k) < 0)
-        Xa_(6,k) += 2*PI;
+        Xa_(6,k) += 2*M_PI;
     }
   }
   // Now we can get the mean...

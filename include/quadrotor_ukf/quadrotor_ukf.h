@@ -16,7 +16,7 @@
 #include <ros/ros.h>
 #include <quadrotor_ukf/vio_utils.h>
 
-#define PI 3.14159265359
+//#define PI 3.14159265359
 #define NUM_INF 999999.9
 
 class QuadrotorUKF
