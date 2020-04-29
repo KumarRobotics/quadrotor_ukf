@@ -124,7 +124,7 @@ QuadrotorUkfNode::QuadrotorUkfNode(std::string ns): nh_(ns), pnh_("~"), tf_initi
   subSLAM_ = pnh_.subscribe<nav_msgs::Odometry>("odom_slam", 10, boost::bind(&QuadrotorUkfNode::slam_callback, this, _1));
 
   pubUKF_  = pnh_.advertise<nav_msgs::Odometry>("control_odom", 10);
-  //pubBias_ = pnh_.advertise<geometry_msgs::Vector3>("/imu_bias", 10);
+  pubBias_ = pnh_.advertise<geometry_msgs::Vector3>("imu_bias", 10);
 }
 
 void QuadrotorUkfNode::init()
