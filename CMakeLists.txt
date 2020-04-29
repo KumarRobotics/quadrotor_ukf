@@ -17,7 +17,7 @@ ELSE()
   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 ENDIF()
 
-find_package(catkin REQUIRED COMPONENTS roscpp sensor_msgs cmake_modules tf2_ros tf2_eigen angles)
+find_package(catkin REQUIRED COMPONENTS roscpp sensor_msgs cmake_modules tf2_ros tf2_geometry_msgs tf2_eigen angles)
 find_package(Eigen3 REQUIRED)
 
 include_directories(include ${catkin_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIR})

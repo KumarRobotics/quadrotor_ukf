@@ -56,6 +56,7 @@ QuadrotorUkfNode::QuadrotorUkfNode(std::string ns): nh_(ns), pnh_("~"), tf_initi
   tfListener_.reset(new tf2_ros::TransformListener(tfBuffer_));
 
   H_I_B_.setZero();
+  average_g_.setZero();
 
   H_C_B_(0,0) = 1;
   H_C_B_(0,1) = 0;
@@ -141,18 +142,41 @@ void QuadrotorUkfNode::init()
       H_I_B_.block(0,0,3,3) = R_I_B.rotation();
       H_I_B_(3,3) = 1;
 
+/*
+  H_I_B_(0,0) = 0;
+  H_I_B_(0,1) = 1;
+  H_I_B_(0,2) = 0;
+  H_I_B_(0,3) = 0;
+
+  H_I_B_(1,0) = -1;
+  H_I_B_(1,1) = 0;
+  H_I_B_(1,2) = 0;
+  H_I_B_(1,3) = 0;
+
+  H_I_B_(2,0) = 0;
+  H_I_B_(2,1) = 0;
+  H_I_B_(2,2) = 1;
+  H_I_B_(2,3) = 0.0;
+
+  H_I_B_(3,0) = 0;
+  H_I_B_(3,1) = 0;
+  H_I_B_(3,2) = 0;
+  H_I_B_(3,3) = 1;
+  */
+
       ROS_INFO_STREAM("Got imu to imu_rotated_base tf " << tf_imu_to_base_);
       ROS_INFO_STREAM("H_I_B\n" << H_I_B_);
 
-      tfListener_.reset();
       tf_initialized_ = true;
     }
     catch (tf2::TransformException &ex)
     {
-      ROS_WARN_THROTTLE(1, "Fail to find transform from [%s] to [%s]",
+      ROS_WARN_THROTTLE(1, "Failed to find transform from [%s] to [%s]",
                         imu_frame_id_.c_str(), imu_rotated_base_frame_id_.c_str());
     }
   }
+
+  tfListener_.reset();
 }
 
 void QuadrotorUkfNode::imu_callback(const sensor_msgs::Imu::ConstPtr& msg)
@@ -163,8 +187,19 @@ void QuadrotorUkfNode::imu_callback(const sensor_msgs::Imu::ConstPtr& msg)
   //Transform imu into base frame
   geometry_msgs::Vector3 linear_acceleration_rotated;
   geometry_msgs::Vector3 angular_velocity_rotated;
+
+  //ROS kinetic and above
   tf2::doTransform(msg->linear_acceleration, linear_acceleration_rotated, tf_imu_to_base_);
   tf2::doTransform(msg->angular_velocity, angular_velocity_rotated, tf_imu_to_base_);
+
+  /* Indigo
+  tf2::Transform t;
+  fromMsg(transform.transform, t);
+  tf2::Vector3 v_out = t.getBasis() * tf2::Vector3(t_in.x, t_in.y, t_in.z);
+  t_out.x = v_out[0];
+  t_out.y = v_out[1];
+  t_out.z = v_out[2];
+  */
 
   //ROS_WARN_STREAM("Orig lin acc " << msg->linear_acceleration << " rotated " << linear_acceleration_rotated);
   //ROS_WARN_STREAM("Orig ang vel " << msg->angular_velocity << " rotated " << angular_velocity_rotated);
@@ -177,6 +212,15 @@ void QuadrotorUkfNode::imu_callback(const sensor_msgs::Imu::ConstPtr& msg)
   u(3,0) = angular_velocity_rotated.x;
   u(4,0) = angular_velocity_rotated.y;
   u(5,0) = angular_velocity_rotated.z;
+
+/*
+  u(0,0) = msg->linear_acceleration.y;
+  u(1,0) = -msg->linear_acceleration.x;
+  u(2,0) = msg->linear_acceleration.z;
+  u(3,0) = msg->angular_velocity.y;
+  u(4,0) = -msg->angular_velocity.x;
+  u(5,0) = msg->angular_velocity.z;
+  */
 
   Eigen::Matrix<double, 6, 1> u_old;
   u_old(0,0) = msg->linear_acceleration.x;
@@ -318,7 +362,8 @@ void QuadrotorUkfNode::slam_callback(const nav_msgs::Odometry::ConstPtr& msg)
   }
 
   //-------------------------
-/*
+
+  /*
   //Transform odom (in imu_init frame) into base frame
   geometry_msgs::PoseStamped ps_in_imu;
   ps_in_imu.header.frame_id = imu_frame_id_;
@@ -344,23 +389,6 @@ void QuadrotorUkfNode::slam_callback(const nav_msgs::Odometry::ConstPtr& msg)
   Eigen::Matrix<double, 3, 1> ypr_rotated = VIOUtil::R_to_ypr(VIOUtil::QuatToMat(q_rotated_base));
   ypr_rotated(2,0) = angles::normalize_angle(ypr_rotated(2,0));
 
-  // Get orientation
-  Eigen::Matrix<double, 4, 1> q;
-  q(0,0) = msg->pose.pose.orientation.w;
-  q(1,0) = msg->pose.pose.orientation.x;
-  q(2,0) = msg->pose.pose.orientation.y;
-  q(3,0) = msg->pose.pose.orientation.z;
-  Eigen::Matrix<double, 3, 1> ypr = VIOUtil::R_to_ypr(VIOUtil::QuatToMat(q));
-
-  // Assemble measurement
-  Eigen::Matrix<double, 6, 1> z;
-  z(0,0) = msg->pose.pose.position.x;
-  z(1,0) = msg->pose.pose.position.y;
-  z(2,0) = msg->pose.pose.position.z;
-  z(3,0) = ypr(0,0);
-  z(4,0) = ypr(1,0);
-  z(5,0) = ypr(2,0);
-
   // Assemble measurement
   Eigen::Matrix<double, 6, 1> z_rotated_base;
   z_rotated_base(0,0) = ps_in_imu_rotated.pose.position.x;
@@ -370,26 +398,21 @@ void QuadrotorUkfNode::slam_callback(const nav_msgs::Odometry::ConstPtr& msg)
   z_rotated_base(4,0) = ypr_rotated(1,0);
   z_rotated_base(5,0) = ypr_rotated(2,0);
 
-  // Assemble measurement covariance
-  Eigen::Matrix<double, 6, 6> RnSLAM;
-  RnSLAM.setZero();
-  //for (int j = 0; j < 3; j++)
-    //for (int i = 0; i < 3; i++)
-      //RnSLAM(i,j) = msg->pose.covariance[i+j*6];
-  RnSLAM(0,0) = msg->pose.covariance[0];
-  RnSLAM(1,1) = msg->pose.covariance[1+1*6];
-  RnSLAM(2,2) = msg->pose.covariance[2+2*6];
-  RnSLAM(3,3) = msg->pose.covariance[3+3*6];
-  RnSLAM(4,4) = msg->pose.covariance[4+4*6];
-  RnSLAM(5,5) = msg->pose.covariance[5+5*6];
-
   //rotate the covariance
   Eigen::Matrix<double, 6, 6>  RnSLAM_rot;
   RnSLAM_rot.setZero();
   RnSLAM_rot.block(0,0,3,3) = H_I_B_.block(0, 0, 3, 3)*RnSLAM.block(0,0,3,3)*H_I_B_.block(0, 0, 3, 3).transpose();
   RnSLAM_rot.block(3,3,3,3) = H_I_B_.block(0, 0, 3, 3)*RnSLAM.block(3,3,3,3)*H_I_B_.block(0, 0, 3, 3).transpose();
 
+  ROS_ERROR_STREAM("z " << z << "\nz_new\n" << z_new << "\nz_rotated_base\n" << z_rotated_base);
+  */
 
+  //ROS_ERROR_STREAM("RnSLAM " << RnSLAM << "\nRnSLAM_new\n" << RnSLAM_new << "\nRnSLAM_rot\n" << RnSLAM_rot);
+
+  //ROS_INFO_STREAM("H_C_B_\n" << H_C_B_ << "\nH_I_B\n" << H_I_B_);
+  //ROS_WARN_STREAM("Pose " << ps_in_imu << " rotated " << ps_in_imu_rotated);
+
+/*
   // Measurement update
   if (quadrotorUKF_.isInitialized())
   {
