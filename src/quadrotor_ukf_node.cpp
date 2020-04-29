@@ -28,7 +28,7 @@ private:
   ros::NodeHandle pnh_;
   ros::Subscriber subImu_, subSLAM_;
   ros::Publisher pubUKF_;
-  //ros::Publisher pubBias;
+  ros::Publisher pubBias_;
 
   tf2_ros::Buffer tfBuffer_;
   std::unique_ptr<tf2_ros::TransformListener> tfListener_;
@@ -232,14 +232,12 @@ void QuadrotorUkfNode::imu_callback(const sensor_msgs::Imu::ConstPtr& msg)
 
     pubUKF_.publish(odomUKF);
 
-    /*
     // Publish bias
     geometry_msgs::Vector3 bias;
     bias.x = x(9);
     bias.y = x(10);
     bias.z = x(11);
     pubBias_.publish(bias);
-    */
   }
 }
 
