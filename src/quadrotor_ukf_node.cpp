@@ -5,6 +5,10 @@
 #include <quadrotor_ukf/quadrotor_ukf.h>
 #include <quadrotor_ukf/vio_utils.h>
 
+#include <geometry_msgs/PoseStamped.h>
+#include <tf2_ros/static_transform_broadcaster.h>
+#include <geometry_msgs/TransformStamped.h>
+
 // ROS
 static ros::Publisher pubUKF;
 //ros::Publisher pubBias;
@@ -13,6 +17,8 @@ static std::string frame_id;
 
 //arma::mat H_C_B = arma::eye<mat>(4,4);//Never use reshape
 Eigen::Matrix<double, 4, 4> H_C_B;
+
+//Starling 2
 
 void imu_callback(const sensor_msgs::Imu::ConstPtr& msg)
 {
@@ -155,12 +161,33 @@ void slam_callback(const nav_msgs::Odometry::ConstPtr& msg)
   }
 }
 
+void pose_callback(const geometry_msgs::PoseStamped::ConstPtr& pose)
+{
+  ROS_INFO("Received Message");
+  static tf2_ros::StaticTransformBroadcaster tf_broadcaster;
+  geometry_msgs::TransformStamped static_transformStamped;
+  static_transformStamped.header.frame_id = "map";
+  static_transformStamped.child_frame_id = "qvio";
+
+  static_transformStamped.transform.translation.x = pose->pose.position.x;
+  static_transformStamped.transform.translation.y = pose->pose.position.y;
+  static_transformStamped.transform.translation.z = pose->pose.position.z;
+
+  static_transformStamped.transform.rotation.x = pose->pose.orientation.x;
+  static_transformStamped.transform.rotation.y = pose->pose.orientation.y;
+  static_transformStamped.transform.rotation.z = pose->pose.orientation.z;
+  static_transformStamped.transform.rotation.w = pose->pose.orientation.w;
+
+  tf_broadcaster.sendTransform(static_transformStamped);
+}
+
+
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "quadrotor_ukf");
+  ROS_INFO("Hey Kash...");
   ros::NodeHandle n("~");
-  
-  
+
   H_C_B (0,0) = 1;
   H_C_B (0,1) = 0;
   H_C_B (0,2) = 0;
@@ -215,9 +242,12 @@ int main(int argc, char** argv)
   // Initialize UKF
   quadrotorUKF.SetUKFParameters(alpha, beta, kappa);
   quadrotorUKF.SetImuCovariance(Rv);
+  tf2_ros::StaticTransformBroadcaster tf_broadcaster;
 
   ros::Subscriber subImu  = n.subscribe("imu" ,      10, imu_callback, ros::TransportHints().tcpNoDelay());
   ros::Subscriber subSLAM = n.subscribe("odom_slam", 10, slam_callback, ros::TransportHints().tcpNoDelay());
+  ros::Subscriber pose_sub = n.subscribe("/qvio/pose", 1, pose_callback, ros::TransportHints().tcpNoDelay());
+
   pubUKF  = n.advertise<nav_msgs::Odometry>("control_odom", 10);
   //pubBias = n.advertise<geometry_msgs::Vector3>("/imu_bias", 10);
 
