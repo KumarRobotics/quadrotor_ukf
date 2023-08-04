@@ -27,14 +27,11 @@ catkin_package(CATKIN_DEPENDS roscpp sensor_msgs geometry_msgs tf2_ros)
 set(UKF_SOURCE_FILES     
 		src/quadrotor_ukf.cpp
 		src/vio_utils.cpp
-
 )
-
 
 set(UKF_HEADER_FILES  
 		include/quadrotor_ukf/quadrotor_ukf.h
 		include/quadrotor_ukf/vio_utils.h 
-
 )
 
 
@@ -46,6 +43,10 @@ target_link_libraries(ukf_filter_lib ${catkin_LIBRARIES} ${EIGEN_LIBS})
 add_executable(quadrotor_ukf  src/quadrotor_ukf_node.cpp)
 add_dependencies(quadrotor_ukf ${catkin_EXPORTED_TARGETS} )
 target_link_libraries(quadrotor_ukf ukf_filter_lib ${catkin_LIBRARIES} ${EIGEN_LIBS})
+
+add_executable(quadrotor_ukf_redo  src/quadrotor_ukf_node_redo.cpp)
+add_dependencies(quadrotor_ukf_redo ${catkin_EXPORTED_TARGETS} )
+target_link_libraries(quadrotor_ukf_redo ukf_filter_lib ${catkin_LIBRARIES} ${EIGEN_LIBS})
 
 
 install(TARGETS ukf_filter_lib quadrotor_ukf
