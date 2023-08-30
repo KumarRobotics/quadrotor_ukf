@@ -24,8 +24,6 @@ class quadrotor_ukf_node
   void slam_callback(const nav_msgs::Odometry::ConstPtr& msg);
   void pose_callback(const geometry_msgs::PoseStamped::ConstPtr& pose_msg);
 
-  void run();
-
  private:
 
   tf2_ros::StaticTransformBroadcaster tf_broadcaster;

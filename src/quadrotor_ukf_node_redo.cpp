@@ -55,7 +55,6 @@ quadrotor_ukf_node::quadrotor_ukf_node() :
   // Initialize UKF
   quadrotorUKF.SetUKFParameters(alpha, beta, kappa);
   quadrotorUKF.SetImuCovariance(Rv);
-
 }
 
 
@@ -202,8 +201,6 @@ void quadrotor_ukf_node::slam_callback(const nav_msgs::Odometry::ConstPtr& msg)
 
 void quadrotor_ukf_node::pose_callback(const geometry_msgs::PoseStamped::ConstPtr& pose)
 {
-  ROS_INFO("Received Message");
-  tf2_ros::StaticTransformBroadcaster tf_broadcaster;
   geometry_msgs::TransformStamped static_transformStamped;
   static_transformStamped.header.frame_id = "map";
   static_transformStamped.child_frame_id = "qvio";

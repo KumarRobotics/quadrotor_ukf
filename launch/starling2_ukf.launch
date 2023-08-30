@@ -1,0 +1,15 @@
+<launch>
+
+  <node pkg="quadrotor_ukf" 
+    type="quadrotor_ukf_redo" 
+    name="quadrotor_ukf_redo" 
+    output="screen">
+    <remap from="~odom_slam" to="qvio/odometry"/>
+    <remap from="~imu" to="imu_apps"/>
+    <param name="frame_id" value="odom"/>
+  </node>
+
+    <node pkg="tf2_ros" type="static_transform_publisher" name="qvio_transform" args="0 0 0 0 0 3.14 /odom /map" />
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find quadrotor_ukf)/rviz/starling2.rviz" />
+
+</launch>
