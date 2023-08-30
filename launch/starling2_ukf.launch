@@ -4,8 +4,8 @@
     type="quadrotor_ukf_redo" 
     name="quadrotor_ukf_redo" 
     output="screen">
-    <remap from="~odom_slam" to="qvio/odometry"/>
-    <remap from="~imu" to="imu_apps"/>
+    <remap from="odom_slam" to="qvio/odometry"/>
+    <remap from="imu" to="imu_apps"/>
     <param name="frame_id" value="odom"/>
   </node>
 

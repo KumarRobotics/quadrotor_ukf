@@ -1,4 +1,11 @@
 <launch>
+  <arg name="use_vicon"      default="false"/>
+  <arg name="record_bag"      default="false"/>
+
+  <group if="$(arg record_bag)">
+    <node name="rosbag_recorder" pkg="rosbag" type="record" args="-a" output="screen" />
+  </group>
+
 
   <node pkg="quadrotor_ukf" 
     type="quadrotor_ukf" 
@@ -9,7 +16,13 @@
     <param name="frame_id" value="odom"/>
   </node>
 
-    <node pkg="tf2_ros" type="static_transform_publisher" name="qvio_transform" args="0 0 0 0 0 3.14 /odom /map" />
-    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find starling2_interface)/rviz/starling2.rviz" />
+  <node pkg="tf2_ros" type="static_transform_publisher" name="qvio_transform" args="0 0 0 0 0 3.14 /odom /map" />
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find starling2_interface)/rviz/starling2.rviz" />
+
+  <group if="$(arg use_vicon)">
+    <include file="$(find mocap_vicon)/launch/vicon.launch"></include>
+    <node pkg="tf2_ros" type="static_transform_publisher" name="fixed_frame_vicon_tf" args="0 0 0 0 0 0 /odom /mocap" />
+  </group>
+
 
 </launch>
