@@ -1,31 +1,18 @@
 <?xml version="1.0"?>
-<package>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
   <name>quadrotor_ukf</name>
   <version>0.0.0</version>
-  <description>The quadrotor_ukf package</description>
+  <description>TODO: Package description</description>
+  <maintainer email="kash@todo.todo">kash</maintainer>
+  <license>TODO: License declaration</license>
 
-  <!-- One maintainer tag required, multiple allowed, one person per tag --> 
-  <!-- Example:  -->
-  <!-- <maintainer email="jane.doe@example.com">Jane Doe</maintainer> -->
-  <maintainer email="Giuseppe@todo.todo">Giuseppe</maintainer>
+  <buildtool_depend>ament_cmake</buildtool_depend>
 
-  <author>Giuseppe Loianno</author>
-  <license>BSD</license>
-  <url>http://ros.org/wiki/quadrotor_ukf</url>
-  
-  <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>roscpp</build_depend>
-  <build_depend>sensor_msgs</build_depend>
-  <build_depend>cmake_modules</build_depend>
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
 
-  <run_depend>roscpp</run_depend>
-  <run_depend>sensor_msgs</run_depend>
-  <!-- The export tag contains other, unspecified, tags -->
   <export>
-    <!-- You can specify that this package is a metapackage here: -->
-    <!-- <metapackage/> -->
-
-    <!-- Other tools can request additional information be placed here -->
-
+    <build_type>ament_cmake</build_type>
   </export>
 </package>
