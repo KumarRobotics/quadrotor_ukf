@@ -44,9 +44,6 @@ add_executable(quadrotor_ukf  src/quadrotor_ukf_node.cpp)
 add_dependencies(quadrotor_ukf ${catkin_EXPORTED_TARGETS} )
 target_link_libraries(quadrotor_ukf ukf_filter_lib ${catkin_LIBRARIES} ${EIGEN_LIBS})
 
-add_executable(quadrotor_ukf_redo  src/quadrotor_ukf_node_redo.cpp)
-add_dependencies(quadrotor_ukf_redo ${catkin_EXPORTED_TARGETS} )
-target_link_libraries(quadrotor_ukf_redo ukf_filter_lib ${catkin_LIBRARIES} ${EIGEN_LIBS})
 
 
 install(TARGETS ukf_filter_lib quadrotor_ukf
