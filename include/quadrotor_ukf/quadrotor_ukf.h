@@ -7,16 +7,16 @@
 #include <list>
 #include <vector>
 #include <algorithm>
-#include <ros/ros.h>
-//#include "pose_utils.h"
+
 #include <Eigen/Geometry>
 #include <Eigen/Cholesky>
 #include <Eigen/Dense>
 #include <Eigen/Eigenvalues>
-#include <quadrotor_ukf/vio_utils.h>
-using namespace std;
 
-#define PI 3.14159265359
+#include <ros/ros.h>
+#include <quadrotor_ukf/vio_utils.h>
+
+//#define PI 3.14159265359
 #define NUM_INF 999999.9
 
 class QuadrotorUKF
@@ -24,42 +24,41 @@ class QuadrotorUKF
   private:
 
     // State History and Covariance
-    std::list<Eigen::Matrix<double, Eigen::Dynamic, 1> >  xHist;
-    std::list<Eigen::Matrix<double, Eigen::Dynamic, 1> >  uHist;
-    std::list<ros::Time> xTimeHist;
-    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> P;
+    std::list<Eigen::Matrix<double, Eigen::Dynamic, 1> >  xHist_;
+    std::list<Eigen::Matrix<double, Eigen::Dynamic, 1> >  uHist_;
+    std::list<ros::Time> xTimeHist_;
+    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> P_;
 
     // Process Covariance Matrix
-    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> Rv;
+    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> Rv_;
 
     // Instance sigma points
-    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> Xa;
-    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> Va;
+    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> Xa_;
+    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> Va_;
 
     // Initial process update indicator
-    bool initMeasure;
-    bool initGravity;
+    bool initMeasure_;
+    bool initGravity_;
 
     // Dimemsions
-    int stateCnt;
-    int procNoiseCnt;
-    int measNoiseSLAMCnt;
-    int L;
+    int stateCnt_;
+    int procNoiseCnt_;
+    int measNoiseSLAMCnt_;
+    int L_;
 
     // Gravity
-    double g;
+    double g_;
 
     // UKF Parameters
-    double alpha;
-    double beta;
-    double kappa;
-    double lambda;
-    double gamma;
-
+    double alpha_;
+    double beta_;
+    double kappa_;
+    double lambda_;
+    double gamma_;
 
     // UKF Weights
-    Eigen::Matrix<double, 1, Eigen::Dynamic>  wm;
-    Eigen::Matrix<double, 1, Eigen::Dynamic>  wc;
+    Eigen::Matrix<double, 1, Eigen::Dynamic>  wm_;
+    Eigen::Matrix<double, 1, Eigen::Dynamic>  wc_;
 
     // Private functions
     void GenerateWeights();
@@ -73,8 +72,7 @@ class QuadrotorUKF
 
     QuadrotorUKF();
     ~QuadrotorUKF();
-    
-    //bool QuadrotorUKF::isInitialized() { return (initMeasure && initGravity); }();
+
     bool isInitialized();
     Eigen::Matrix<double, Eigen::Dynamic, 1> GetState();
     ros::Time GetStateTime();
@@ -87,6 +85,7 @@ class QuadrotorUKF
 
     bool ProcessUpdate(Eigen::Matrix<double, Eigen::Dynamic, 1> u, ros::Time time);
     bool MeasurementUpdateSLAM(const Eigen::Matrix<double, Eigen::Dynamic, 1>&  z, const Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>&  RnSLAM, ros::Time time);
+    void PrintxHist();
 };
 
 #endif
